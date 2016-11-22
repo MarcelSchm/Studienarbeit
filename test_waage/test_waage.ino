@@ -4,13 +4,14 @@
 #define CLK  A0
 
 
-//#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
-#define PROCESSING  //für weitergabe an processing
+#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
+//#define PROCESSING  //für weitergabe an processing
 
 HX711 scale(DOUT, CLK);
 
 float calibration_factor = -246.5; //-246 für tablet, -247 für handy
 byte gewicht[4]={0}; // Gewicht in 3 Bytes, ersten 2 byte Ganzzahl(plus evtl startzeichen), letzte byte komma 
+ unsigned long zeit = 0; //Abstand zwischen Messungen
 
 
 
@@ -39,10 +40,15 @@ void loop() {
   scale.set_scale(calibration_factor); //Adjust to this calibration factor
 #ifdef DEBUGSERIAL
   Serial.print("Reading: ");
-  Serial.print(scale.get_units(5));
+  zeit = millis();
+  scale.get_units();
+    zeit = millis()-zeit;
+  Serial.print(scale.get_units());
   Serial.print(" g"); // was für 1 Faktor?
   Serial.print(" calibration_factor: ");
   Serial.print(calibration_factor);
+  Serial.print(" Zeit(in Milisek) zwischen Messwerten: ");
+  Serial.print(zeit);
   Serial.println();
   #endif
   
