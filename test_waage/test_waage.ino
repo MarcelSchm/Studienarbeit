@@ -4,8 +4,8 @@
 #define CLK  A0
 
 
-#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
-//#define PROCESSING  //für weitergabe an processing
+//#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
+#define PROCESSING  //für weitergabe an processing
 
 HX711 scale(DOUT, CLK);
 
@@ -53,7 +53,7 @@ void loop() {
   #endif
   
   #ifdef PROCESSING
-umwandelnBytes(scale.get_units(5),gewicht);
+umwandelnBytes(scale.get_units(),gewicht);
 Serial.write(gewicht[0]);
 Serial.write(gewicht[1]);
 Serial.write(gewicht[2]);

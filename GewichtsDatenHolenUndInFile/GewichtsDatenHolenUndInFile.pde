@@ -17,6 +17,8 @@ double inByte = -1.0;    // Incoming serial data
 byte[] ziel = new byte[4];  //gewichtsdaten
 PrintWriter output; // Data File
 boolean pressed = false; //maus gedrückt
+Table table; //objekt zum Tabellarisch speichern
+int messwertNr = 0; //ID des Messwertes
 
 void setup() {
   size(400, 300);
@@ -31,10 +33,11 @@ void setup() {
   // is always my  FTDI adaptor, so I open Serial.list()[0].
   // In Windows, this usually opens COM1.
   // Open whatever port is the one you're using.
-  String portName = Serial.list()[2];
+  String portName = Serial.list()[1];
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('@');
-  output = createWriter("Gewicht.txt");
+  output = createWriter("Gewicht.csv");
+  output.println("Messwert-Nr." + ";" + "Gewicht in g" );
   
 }
 
@@ -49,16 +52,17 @@ void serialEvent(Serial myPort) {
  // inByte = myPort.read();
   ziel=myPort.readBytes();
   inByte = umwandelnDouble(ziel );
-  output.println(inByte);
-  printArray(ziel);
-  print("array[0] ");
-  println(binary(ziel[0]));
-    println("array[1] ");
-   println(binary(ziel[1]));
-       println("array[2] ");
-    println(binary(ziel[2]));
-        println("array[3] ");
-     println(binary(ziel[3]));
+  output.println(messwertNr + ";" + inByte);
+  messwertNr++;
+  //printArray(ziel);
+  //print("array[0] ");
+  //println(binary(ziel[0]));
+  //  println("array[1] ");
+  // println(binary(ziel[1]));
+  //     println("array[2] ");
+  //  println(binary(ziel[2]));
+  //      println("array[3] ");
+  //   println(binary(ziel[3]));
   }
   catch(RuntimeException e) {
     e.printStackTrace();
