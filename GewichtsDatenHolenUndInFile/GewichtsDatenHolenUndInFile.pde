@@ -1,14 +1,3 @@
-/**
- * Serial Duplex 
- * by Tom Igoe. 
- * 
- * Sends a byte out the serial port when you type a key
- * listens for bytes received, and displays their value. 
- * This is just a quick application for testing serial data
- * in both directions. 
- */
-
-
 import processing.serial.*;
 
 Serial myPort;      // The serial port
@@ -29,15 +18,14 @@ void setup() {
   // List all the available serial ports:
   printArray(Serial.list());
 
-  // I know that the first port in the serial list on my mac
-  // is always my  FTDI adaptor, so I open Serial.list()[0].
-  // In Windows, this usually opens COM1.
-  // Open whatever port is the one you're using.
-  String portName = Serial.list()[1];
+  // listet alle verfügbaren COM-Ports auf.
+  // Im Geräte Manager schauen, welcher COM-Port der Arduino ist
+  // und bei portName das entsprechende array element wählen
+  String portName = Serial.list()[1]; // hier COM-Port ändern
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('@');
-  output = createWriter("Gewicht.csv");
-  output.println("Messwert-Nr." + ";" + "Gewicht in g" );
+  output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".txt");
+  output.println("Messwert-Nr." + ";" + "Gewicht in g" );  //hier spalten ergänzen
   
 }
 
@@ -52,20 +40,11 @@ void serialEvent(Serial myPort) {
  // inByte = myPort.read();
   ziel=myPort.readBytes();
   inByte = umwandelnDouble(ziel );
-  output.println(messwertNr + ";" + inByte);
+  output.println(messwertNr + ";" + String.format("%.2f",inByte)); //hier neue Messwerte hinzufügen
   messwertNr++;
-  //printArray(ziel);
-  //print("array[0] ");
-  //println(binary(ziel[0]));
-  //  println("array[1] ");
-  // println(binary(ziel[1]));
-  //     println("array[2] ");
-  //  println(binary(ziel[2]));
-  //      println("array[3] ");
-  //   println(binary(ziel[3]));
   }
   catch(RuntimeException e) {
-    e.printStackTrace();
+    e.printStackTrace(); //<>//
   }
   
 }
@@ -88,7 +67,7 @@ double umwandelnDouble(byte array[]) {
 }
   return (double)vorkomma + (double)nachkomma / 100.0;
   }
-else return 180394.11;
+else return 180394.11;// magic error number
 
 }
 
