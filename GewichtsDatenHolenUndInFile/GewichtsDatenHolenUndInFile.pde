@@ -67,7 +67,7 @@ double umwandelnDouble(byte array[]) {
 }
   return (double)vorkomma + (double)nachkomma / 100.0;
   }
-else return 180394.11;// magic error number
+else return 180394.11;// magic error number, if something doesnt work
 
 }
 

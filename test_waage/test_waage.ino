@@ -4,8 +4,8 @@
 #define CLK  A0
 
 
-//#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
-#define PROCESSING  //für weitergabe an processing
+#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
+//#define PROCESSING  //für weitergabe an processing
 
 HX711 scale(DOUT, CLK);
 
@@ -28,23 +28,23 @@ void setup() {
   scale.set_scale();
   scale.tare(); //Reset the scale to 0
 
-  long zero_factor = scale.read_average(); //Get a baseline reading
+  long zero_factor = scale.read_average(); //Nullmessung
   #ifdef DEBUGSERIAL
-  Serial.print("Zero factor: "); //This can be used to remove the need to tare the scale. Useful in permanent scale projects.
+  Serial.print("Zero factor: "); //kann genutzt werden, um die waage nicht mehr tarieren zu müssen.vllt noch sinnvoll
   Serial.println(zero_factor);
   #endif
 }
 
 void loop() {
 
-  scale.set_scale(calibration_factor); //Adjust to this calibration factor
+  scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
 #ifdef DEBUGSERIAL
   Serial.print("Reading: ");
   zeit = millis();
   scale.get_units();
     zeit = millis()-zeit;
   Serial.print(scale.get_units());
-  Serial.print(" g"); // was für 1 Faktor?
+  Serial.print(" g"); 
   Serial.print(" calibration_factor: ");
   Serial.print(calibration_factor);
   Serial.print(" Zeit(in Milisek) zwischen Messwerten: ");
