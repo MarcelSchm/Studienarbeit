@@ -26,7 +26,7 @@ void loop() {
    if (Serial.available()) {
     char temp = Serial.read();
     if(temp == '+' || temp == 'a'){
-      if(servoValue < 180){
+      if(servoValue < 179){
         servoValue += 1;
       } else {
        Serial.println("Maximum reached");

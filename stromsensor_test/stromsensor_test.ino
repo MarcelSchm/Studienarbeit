@@ -31,7 +31,7 @@ void loop()
     readings[index] = analogRead(AMPPIN); //Raw data reading
 //Data processing:510-raw data from analogRead when the input is 0;
 // 5-5v; the first 0.04-0.04V/A(sensitivity); the second 0.04-offset val;
-    readings[index] = (readings[index]-512)*5/1024/0.04-0.12;
+    readings[index] = (readings[index]-512)*5/1024/0.04+0.12;
                                                        
     total= total + readings[index];       
     index = index + 1;                    
