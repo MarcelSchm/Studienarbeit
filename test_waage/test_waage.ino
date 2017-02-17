@@ -4,8 +4,8 @@
 #define CLK  A0
 
 
-#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
-//#define PROCESSING  //für weitergabe an processing
+//#define DEBUGSERIAL  //Werte über Arduino Serial Monitor
+#define PROCESSING  //für weitergabe an processing
 
 HX711 scale(DOUT, CLK);
 
