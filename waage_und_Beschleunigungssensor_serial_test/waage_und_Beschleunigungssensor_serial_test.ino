@@ -13,6 +13,7 @@ HX711 scale(DOUT, CLK);
  
 float calibration_factor = -246.5; //-246 für tablet, -247 für handy
 byte gewicht[4]={0}; // Gewicht in 3 Bytes, ersten 2 byte Ganzzahl(plus evtl startzeichen), letzte byte komma 
+byte beschleunigung[4]={0};
  unsigned long zeit = 0; //Abstand zwischen Messungen
 
 
@@ -56,11 +57,17 @@ void loop() {
   #endif
   
   #ifdef PROCESSING
+    beschleunigungssensor->accelerometerRead();
 umwandelnBytes(scale.get_units(),gewicht);
 Serial.write(gewicht[0]);
 Serial.write(gewicht[1]);
 Serial.write(gewicht[2]);
 Serial.write(gewicht[3]);
+umwandelnBytes(beschleunigungssensor->acc_x,beschleunigung);
+Serial.write(beschleunigung[0]);
+Serial.write(beschleunigung[1]);
+Serial.write(beschleunigung[2]);
+Serial.write(beschleunigung[3]);
   #endif
 
 //  if(Serial.available())
