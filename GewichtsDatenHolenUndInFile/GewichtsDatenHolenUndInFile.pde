@@ -1,4 +1,5 @@
 import processing.serial.*;
+import java.util.Locale;
 
 Serial myPort;      // The serial port
 int whichKey = -1;  // Variable to hold keystoke values
@@ -21,10 +22,10 @@ void setup() {
   // listet alle verfügbaren COM-Ports auf.
   // Im Geräte Manager schauen, welcher COM-Port der Arduino ist
   // und bei portName das entsprechende array element wählen
-  String portName = Serial.list()[1]; // hier COM-Port ändern
+  String portName = Serial.list()[2]; // hier COM-Port ändern
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('@');
-  output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".txt");
+  output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv");
   output.println("Messwert-Nr." + ";" + "Gewicht in g" );  //hier spalten ergänzen
   
 }
@@ -39,8 +40,8 @@ void serialEvent(Serial myPort) {
   try{
  // inByte = myPort.read();
   ziel=myPort.readBytes();
-  inByte = umwandelnDouble(ziel );
-  output.println(messwertNr + ";" + String.format("%.2f",inByte)); //hier neue Messwerte hinzufügen
+  inByte = umwandelnDouble(ziel ); 
+  output.println(messwertNr + ";" + String.format(Locale.US, "%.2f",inByte)); //hier neue Messwerte hinzufügen
   messwertNr++;
   }
   catch(RuntimeException e) {

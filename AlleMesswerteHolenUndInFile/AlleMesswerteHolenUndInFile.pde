@@ -1,4 +1,5 @@
 import processing.serial.*;
+import java.util.Locale;
 
 Serial myPort;      // The serial port
 int whichKey = -1;  // Variable to hold keystoke values
@@ -38,7 +39,7 @@ ESCWerte = new int[fahrprofil.getRowCount()];
   String portName = Serial.list()[2]; // hier COM-Port ändern
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('@');
-  output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".txt");
+  output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv");
   output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
   
 }
@@ -56,10 +57,11 @@ void serialEvent(Serial myPort) {
   ziel=myPort.readBytes();
   inByte = umwandelnDouble(ziel );
   if( messwertNr == 0){
-  output.println(messungNr + ";" + String.format("%.2f",inByte)); //hier neue Messwerte hinzufügen
+  output.println(messungNr + ";" + String.format(Locale.US, "%.2f",inByte)); //hier neue Messwerte hinzufügen
   } else {
-    output.println( ";" + String.format("%.2f",inByte)); //hier neue Messwerte hinzufügen
+    output.println( ";" + String.format(Locale.US,"%.2f",inByte)); //hier neue Messwerte hinzufügen
   }
+  messwertNr++;
   }
   if(messwertNr > 5){
   messwertNr = 0;
