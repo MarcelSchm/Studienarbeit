@@ -5,8 +5,22 @@ BMA180::BMA180(){
   // BMA180 setup and shakehands
   Wire.begin();                         
 
+  Serial.println("Initializing the BMA180 sensor");
+  Serial.println(); 
   accelerometerInit(); 
 
+  Serial.println("Reading chip id and version");  
+  Serial.println();
+
+  readFrom(CHIP_ID, 1, chipID);   
+  readFrom(VERSION, 1, chipVersion); 
+
+  Serial.print("Chip ID: ");
+  Serial.print(chipID[0]);
+  Serial.print("\t");              
+  Serial.print("Version: ");
+  Serial.println(chipVersion[0]);
+  Serial.println();
 }
 
 
