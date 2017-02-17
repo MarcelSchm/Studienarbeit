@@ -8,6 +8,7 @@
 */
 
 #include <Servo.h>
+#define SPIN 9
 
 Servo myservo;  // create servo object to control a servo
 
@@ -16,7 +17,7 @@ int servoValue = 0;
 
 void setup() {
   Serial.begin(9600);
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  myservo.attach(SPIN);  // attaches the servo on pin 9 to the servo object
   Serial.println("Press + or a to increase servo");
   Serial.println("Press - or z to decrease servo");
 }

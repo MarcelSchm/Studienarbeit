@@ -17,7 +17,7 @@ float average = 0;                // the average
 
 float currentValue = 0;
 
-#define AMPPIN A0
+#define AMPPIN A2
 
 void setup()
 {
