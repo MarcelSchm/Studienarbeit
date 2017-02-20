@@ -14,6 +14,7 @@
 //#define DEBUGSERVO // Manuell Werte für den ESC vorgeben
 //#define DEBUGCURRENT //Strom-Messwerte über Arduino Serial Monitor
 //#define DEBUGACCELEROMETER // Beschleunigungs-MEsswerte über Arduino Serial Monitor
+//#define SERIALOUTPUTALL //gib alle Messwerte über arduino serial monitor aus
 HX711 scale(DOUT, CLK);
 Servo myServo;
 BMA180* beschleunigungssensor;
@@ -22,6 +23,7 @@ float calibration_factor = -246.5; //-246 für tablet, -247 für handy (Referenz
 byte gewicht[4] = {0}; // Gewicht in 3 Bytes, ersten 2 byte Ganzzahl(plus evtl startzeichen), letzte byte komma
 byte strom[4] = {0};
 byte servo[4] = {0};
+byte servoAcknowledgeByte[4] = {0};
 byte beschleunigungX[4] = {0};
 byte beschleunigungY[4] = {0};
 byte beschleunigungZ[4] = {0};
@@ -68,26 +70,26 @@ void setup() {
 #endif
   /*******************************SERVO-ENDE*****************************************************************/
 
-  
+
   /*******************************STROMSENSOR**********************************************************************/
   for (int thisReading = 0; thisReading < numReadingsCurrent; thisReading++)
     CurrentReadings[thisReading] = 0;
   /*******************************STROMSENSOR-ENDE***********************************************************************/
 
-  
+
   /********************************BESCHLEUNIGUNGSSENSOR*************************************************************************************/
-  #ifdef DEBUGACCELEROMETER
+#ifdef DEBUGACCELEROMETER
   Serial.println("BMA180 accelerometer test");
   Serial.println();
   beschleunigungssensor = new BMA180(true);
-  #endif
+#endif
   beschleunigungssensor = new BMA180(false);
   /********************************BESCHLEUNIGUNGSSENSOR-ENDE*************************************************************************************/
 }
 
 void loop() {
 
-   /************************SERVO****************************************************************************/
+  /************************SERVO****************************************************************************/
 #ifdef DEBUGSERVO
   if (Serial.available()) {
     char temp = Serial.read();
@@ -111,13 +113,23 @@ void loop() {
 #endif
 
 #ifdef PROCESSING
- if(isValueReady[3] == false) {
-if (Serial.available()) {
-   servoValue = 11;//Serial.read();
-  umwandelnBytes(servoValue, servo);
-  isValueReady[0] = true;
-}
-}
+//  if (isValueReady[3] == false) {
+//    if (Serial.read() == 'S') { // sendebereit 
+//      umwandelnBytes(123,servoAcknowledgeByte); //empfangsbereit
+//      Serial.write(servoAcknowledgeByte[0]);
+//      Serial.write(servoAcknowledgeByte[1]);
+//      Serial.write(servoAcknowledgeByte[2]);
+//      Serial.write(servoAcknowledgeByte[3]);
+     servoValue = 11;//Serial.read();
+      umwandelnBytes(servoValue, servo);
+      isValueReady[0] = true;
+//    }
+//  }
+#endif
+
+#ifdef SERIALOUTPUTALL
+Serial.print("Servo Value:  ");
+    Serial.print(servoValue);
 #endif
 
 
@@ -126,7 +138,7 @@ if (Serial.available()) {
   delay(15);                           // waits for the servo to get there
   /************************SERVO-ENDE****************************************************************************/
 
-  
+
   /****************************WAAGE**************************************************************/
   scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
 #ifdef DEBUGSERIAL
@@ -144,10 +156,10 @@ if (Serial.available()) {
 #endif
 
 #ifdef PROCESSING
- if(isValueReady[3] == false) {
-  umwandelnBytes(12, gewicht);//umwandelnBytes(scale.get_units(), gewicht);
-  isValueReady[1] = true;
- }
+  if (isValueReady[3] == false) {
+    umwandelnBytes(scale.get_units(), gewicht);
+    isValueReady[1] = true;
+  }
 #endif
 #ifdef CALIBRATIONSCALE
   if (Serial.available())
@@ -162,8 +174,13 @@ if (Serial.available()) {
       calibration_factor -= 1;
   }
 #endif
+
+#ifdef SERIALOUTPUTALL
+ Serial.print("\tGewicht: ");
+  Serial.print(scale.get_units());
+#endif
   /****************************WAAGE-ENDE******************************************************************/
- 
+
   /*******************************STROMSENSOR**********************************************************************/
   total = total - CurrentReadings[index];
   CurrentReadings[index] = analogRead(AMPPIN); //Raw data reading
@@ -178,11 +195,11 @@ if (Serial.available()) {
   average = total / numReadingsCurrent; //Smoothing algorithm (http://www.arduino.cc/en/Tutorial/Smoothing)
   currentValue = average;
 
-  #ifdef PROCESSING
-   if(isValueReady[3] == false) {
-  umwandelnBytes(13, strom);//umwandelnBytes(currentValue, strom);
-  isValueReady[2] = true;
-   }
+#ifdef PROCESSING
+  if (isValueReady[3] == false) {
+ umwandelnBytes(currentValue, strom);
+    isValueReady[2] = true;
+  }
 #endif
 
 #ifdef DEBUGCURRENT
@@ -190,69 +207,102 @@ if (Serial.available()) {
   Serial.println(currentValue);
   delay(10);
 #endif
+
+#ifdef SERIALOUTPUTALL
+Serial.print("\tStromWert: ");
+  Serial.print(currentValue);
+#endif
   /*******************************STROMSENSOR-ENDE***********************************************************************/
 
   /********************************BESCHLEUNIGUNGSSENSOR*************************************************************************************/
-  beschleunigungssensor->accelerometerRead();     
+  beschleunigungssensor->accelerometerRead();
 
- #ifdef PROCESSING
- if(isValueReady[3] == false) {
-  umwandelnBytes(14, beschleunigungX);//  umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
-  umwandelnBytes(15, beschleunigungY);//  umwandelnBytes(beschleunigungssensor->acc_y, beschleunigungY);
-  umwandelnBytes(16, beschleunigungZ);//  umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
-  isValueReady[3] = true;
- } 
+#ifdef PROCESSING
+  if (isValueReady[3] == false) {
+  umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
+  umwandelnBytes(beschleunigungssensor->acc_y, beschleunigungY);
+  umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
+    isValueReady[3] = true;
+  }
 #endif
 
-  #ifdef DEBUGACCELEROMETER
+#ifdef DEBUGACCELEROMETER
   Serial.print("x = ");
   Serial.print(beschleunigungssensor->acc_x);
-  Serial.print("g"); 
+  Serial.print("g");
 
   Serial.print("\t y = ");
   Serial.print(beschleunigungssensor->acc_y);
-  Serial.print("g"); 
+  Serial.print("g");
 
   Serial.print("\t z = ");
+  Serial.println("g");
+#endif
+
+#ifdef SERIALOUTPUTALL
+Serial.print("\tx = ");
+  Serial.print(beschleunigungssensor->acc_x);
+  Serial.print("g");
+  Serial.print("\ty = ");
+  Serial.print(beschleunigungssensor->acc_y);
+  Serial.print("g");
+  Serial.print("\tz = ");
   Serial.print(beschleunigungssensor->acc_z);
-  Serial.println("g"); 
-  #endif
-  
+  Serial.println("g");
 
+#endif
   /********************************BESCHLEUNIGUNGSSENSOR-ENDE*************************************************************************************/
+ #ifdef PROCESSING
   messwerteSenden();
+#endif
 }
 
-void messwerteSenden(){
-  
-  if(isValueReady[0] == true && isValueReady[1] == true && isValueReady[2] == true && isValueReady[3] == true){
-  Serial.write(servo[0]);
-  Serial.write(servo[1]);
-  Serial.write(servo[2]);
-  Serial.write(servo[3]);
-  Serial.write(gewicht[0]);
-  Serial.write(gewicht[1]);
-  Serial.write(gewicht[2]);
-  Serial.write(gewicht[3]);
-  Serial.write(strom[0]);
-  Serial.write(strom[1]);
-  Serial.write(strom[2]);
-  Serial.write(strom[3]);
-  Serial.write(beschleunigungX[0]);
-  Serial.write(beschleunigungX[1]);
-  Serial.write(beschleunigungX[2]);
-  Serial.write(beschleunigungX[3]);
-  Serial.write(beschleunigungY[0]);
-  Serial.write(beschleunigungY[1]);
-  Serial.write(beschleunigungY[2]);
-  Serial.write(beschleunigungY[3]);
-  Serial.write(beschleunigungZ[0]);
-  Serial.write(beschleunigungZ[1]);
-  Serial.write(beschleunigungZ[2]);
-  Serial.write(beschleunigungZ[3]);
-  
+void messwerteSenden() {
+  int gotMessage = 0;
+  if (isValueReady[0] == true && isValueReady[1] == true && isValueReady[2] == true && isValueReady[3] == true) {
+    Serial.write(servo[0]);
+    Serial.write(servo[1]);
+    Serial.write(servo[2]);
+    Serial.write(servo[3]);
+    while (1 != Serial.read() ) { //warte auf signal
+    }
+    Serial.write(gewicht[0]);
+    Serial.write(gewicht[1]);
+    Serial.write(gewicht[2]);
+    Serial.write(gewicht[3]);
+    while (2 != Serial.read() ) { //warte auf signal
+    }
+    Serial.write(strom[0]);
+    Serial.write(strom[1]);
+    Serial.write(strom[2]);
+    Serial.write(strom[3]);
+    while (3 != Serial.read() ) { //warte auf signal
+    }
+    Serial.write(beschleunigungX[0]);
+    Serial.write(beschleunigungX[1]);
+    Serial.write(beschleunigungX[2]);
+    Serial.write(beschleunigungX[3]);
+    while (4 != Serial.read() ) { //warte auf signal
+    }
+    Serial.write(beschleunigungY[0]);
+    Serial.write(beschleunigungY[1]);
+    Serial.write(beschleunigungY[2]);
+    Serial.write(beschleunigungY[3]);
+    while (5 != Serial.read() ) { //warte auf signal
+    }
+    Serial.write(beschleunigungZ[0]);
+    Serial.write(beschleunigungZ[1]);
+    Serial.write(beschleunigungZ[2]);
+    Serial.write(beschleunigungZ[3]);
+ while (6 != Serial.read() ) { //warte auf signal
+    }
+  }
+ Serial.print(isValueReady[0],BIN);
+  Serial.print(isValueReady[1],BIN);
+   Serial.print(isValueReady[2],BIN);
+    Serial.print(isValueReady[3],BIN);
   isValueReady[4] = {false};
-}
+
 
 }
 
