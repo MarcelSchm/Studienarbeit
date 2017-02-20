@@ -26,7 +26,7 @@ byte beschleunigungX[4] = {0};
 byte beschleunigungY[4] = {0};
 byte beschleunigungZ[4] = {0};
 unsigned long zeit = 0; //Abstand zwischen Messungen
-bool hasSent[4] = {false};
+bool isValueReady[4] = {false};
 
 int servoValue = 0;
 
@@ -111,15 +111,11 @@ void loop() {
 #endif
 
 #ifdef PROCESSING
- if(hasSent[3] = false) {
+ if(isValueReady[3] == false) {
 if (Serial.available()) {
-   servoValue = Serial.read();
+   servoValue = 11;//Serial.read();
   umwandelnBytes(servoValue, servo);
-  Serial.write(servo[0]);
-  Serial.write(servo[1]);
-  Serial.write(servo[2]);
-  Serial.write(servo[3]);
-  hasSent[0] = true;
+  isValueReady[0] = true;
 }
 }
 #endif
@@ -148,13 +144,9 @@ if (Serial.available()) {
 #endif
 
 #ifdef PROCESSING
- if(hasSent[3] = false) {
-  umwandelnBytes(scale.get_units(), gewicht);
-  Serial.write(gewicht[0]);
-  Serial.write(gewicht[1]);
-  Serial.write(gewicht[2]);
-  Serial.write(gewicht[3]);
-  hasSent[1] = true;
+ if(isValueReady[3] == false) {
+  umwandelnBytes(12, gewicht);//umwandelnBytes(scale.get_units(), gewicht);
+  isValueReady[1] = true;
  }
 #endif
 #ifdef CALIBRATIONSCALE
@@ -187,13 +179,9 @@ if (Serial.available()) {
   currentValue = average;
 
   #ifdef PROCESSING
-   if(hasSent[3] = false) {
-  umwandelnBytes(currentValue, strom);
-  Serial.write(strom[0]);
-  Serial.write(strom[1]);
-  Serial.write(strom[2]);
-  Serial.write(strom[3]);
-  hasSent[2] = true;
+   if(isValueReady[3] == false) {
+  umwandelnBytes(13, strom);//umwandelnBytes(currentValue, strom);
+  isValueReady[2] = true;
    }
 #endif
 
@@ -208,25 +196,11 @@ if (Serial.available()) {
   beschleunigungssensor->accelerometerRead();     
 
  #ifdef PROCESSING
- if(hasSent[3] = false) {
-  umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
-  Serial.write(beschleunigungX[0]);
-  Serial.write(beschleunigungX[1]);
-  Serial.write(beschleunigungX[2]);
-  Serial.write(beschleunigungX[3]);
-
-  umwandelnBytes(beschleunigungssensor->acc_y, beschleunigungY);
-  Serial.write(beschleunigungY[0]);
-  Serial.write(beschleunigungY[1]);
-  Serial.write(beschleunigungY[2]);
-  Serial.write(beschleunigungY[3]);
- 
- umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
-  Serial.write(beschleunigungZ[0]);
-  Serial.write(beschleunigungZ[1]);
-  Serial.write(beschleunigungZ[2]);
-  Serial.write(beschleunigungZ[3]);
-  hasSent[3] = true;
+ if(isValueReady[3] == false) {
+  umwandelnBytes(14, beschleunigungX);//  umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
+  umwandelnBytes(15, beschleunigungY);//  umwandelnBytes(beschleunigungssensor->acc_y, beschleunigungY);
+  umwandelnBytes(16, beschleunigungZ);//  umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
+  isValueReady[3] = true;
  } 
 #endif
 
@@ -246,8 +220,38 @@ if (Serial.available()) {
   
 
   /********************************BESCHLEUNIGUNGSSENSOR-ENDE*************************************************************************************/
-if(hasSent[0] == true && hasSent[1] == true && hasSent[2] == true && hasSent[3] == true){
-  hasSent[4] = {0};
+  messwerteSenden();
+}
+
+void messwerteSenden(){
+  
+  if(isValueReady[0] == true && isValueReady[1] == true && isValueReady[2] == true && isValueReady[3] == true){
+  Serial.write(servo[0]);
+  Serial.write(servo[1]);
+  Serial.write(servo[2]);
+  Serial.write(servo[3]);
+  Serial.write(gewicht[0]);
+  Serial.write(gewicht[1]);
+  Serial.write(gewicht[2]);
+  Serial.write(gewicht[3]);
+  Serial.write(strom[0]);
+  Serial.write(strom[1]);
+  Serial.write(strom[2]);
+  Serial.write(strom[3]);
+  Serial.write(beschleunigungX[0]);
+  Serial.write(beschleunigungX[1]);
+  Serial.write(beschleunigungX[2]);
+  Serial.write(beschleunigungX[3]);
+  Serial.write(beschleunigungY[0]);
+  Serial.write(beschleunigungY[1]);
+  Serial.write(beschleunigungY[2]);
+  Serial.write(beschleunigungY[3]);
+  Serial.write(beschleunigungZ[0]);
+  Serial.write(beschleunigungZ[1]);
+  Serial.write(beschleunigungZ[2]);
+  Serial.write(beschleunigungZ[3]);
+  
+  isValueReady[4] = {false};
 }
 
 }
@@ -260,7 +264,7 @@ void umwandelnBytes(double zahl, byte array[]) {
   if (true == negativ) {
     zahl *= -1;
   }
-  uint16_t vorkomma = ( int)zahl;
+  uint16_t vorkomma = (int)zahl;
   unsigned int nachkomma = 0;
   zahl -= (int)zahl;
   nachkomma = 100 * zahl;
