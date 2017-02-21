@@ -31,6 +31,7 @@ unsigned long zeit = 0; //Abstand zwischen Messungen
 bool isValueReady[4] = {false};
 
 int servoValue = 0;
+int i = 0;
 
 const int numReadingsCurrent = 30;
 float CurrentReadings[numReadingsCurrent];      // Strom Messwerte des Analog Inputs
@@ -260,48 +261,50 @@ Serial.print("\tx = ");
 void messwerteSenden() {
   int gotMessage = 0;
   if (isValueReady[0] == true && isValueReady[1] == true && isValueReady[2] == true && isValueReady[3] == true) {
+     umwandelnBytes(i, beschleunigungX);
     Serial.write(servo[0]);
     Serial.write(servo[1]);
     Serial.write(servo[2]);
     Serial.write(servo[3]);
-    while (1 != Serial.read() ) { //warte auf signal
-    }
+//    while (1 != Serial.read() ) { //warte auf signal
+//    }
     Serial.write(gewicht[0]);
     Serial.write(gewicht[1]);
     Serial.write(gewicht[2]);
     Serial.write(gewicht[3]);
-    while (2 != Serial.read() ) { //warte auf signal
-    }
+//    while (2 != Serial.read() ) { //warte auf signal
+//    }
     Serial.write(strom[0]);
     Serial.write(strom[1]);
     Serial.write(strom[2]);
     Serial.write(strom[3]);
-    while (3 != Serial.read() ) { //warte auf signal
-    }
+//    while (3 != Serial.read() ) { //warte auf signal
+//    }
     Serial.write(beschleunigungX[0]);
     Serial.write(beschleunigungX[1]);
     Serial.write(beschleunigungX[2]);
     Serial.write(beschleunigungX[3]);
-    while (4 != Serial.read() ) { //warte auf signal
-    }
+//    while (4 != Serial.read() ) { //warte auf signal
+//    }
     Serial.write(beschleunigungY[0]);
     Serial.write(beschleunigungY[1]);
     Serial.write(beschleunigungY[2]);
     Serial.write(beschleunigungY[3]);
-    while (5 != Serial.read() ) { //warte auf signal
-    }
+//    while (5 != Serial.read() ) { //warte auf signal
+//    }
     Serial.write(beschleunigungZ[0]);
     Serial.write(beschleunigungZ[1]);
     Serial.write(beschleunigungZ[2]);
-    Serial.write(beschleunigungZ[3]);
- while (6 != Serial.read() ) { //warte auf signal
-    }
+    Serial.write('e'); // statt @ ein absolutes Endbyte
+// while (6 != Serial.read() ) { //warte auf signal
+//    }
   }
- Serial.print(isValueReady[0],BIN);
-  Serial.print(isValueReady[1],BIN);
-   Serial.print(isValueReady[2],BIN);
-    Serial.print(isValueReady[3],BIN);
+// Serial.print(isValueReady[0],BIN);
+//  Serial.print(isValueReady[1],BIN);
+//   Serial.print(isValueReady[2],BIN);
+//    Serial.print(isValueReady[3],BIN);
   isValueReady[4] = {false};
+  i++;
 
 
 }
