@@ -19,7 +19,7 @@
   Table fahrprofil;
   int[] ESCWerte;
   int ESCLaufvariable = 0;
-  boolean ESCsend = true; //ob ESC wert gesendet wurde, true für ersten wert
+  boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert
   
   
   void setup() {
@@ -31,7 +31,7 @@
   // List all the available serial ports:
   printArray(Serial.list());
   
-  fahrprofil = loadTable("C:/Users/User/Dropbox/Scripte/7. Semester/Studienarbeit/Arduino Code" + "/Rampe.csv", "header");
+  fahrprofil = loadTable("C:/Users/User/Dropbox/Scripte/7. Semester/Studienarbeit/Arduino Code" + "/Sprung2.csv", "header");
   ESCWerte = new int[fahrprofil.getRowCount()];
    println(fahrprofil.getRowCount() + " total rows in fahrprofil");
   for (TableRow row : fahrprofil.rows()) {
@@ -39,6 +39,7 @@
     ESCWerte[ESCLaufvariable] = Integer.parseInt(row.getString("ESC-Werte"));
     ESCLaufvariable++;
   }
+  println(" VAriable: " + ESCLaufvariable);
   ESCLaufvariable = 0;
   
   // listet alle verfügbaren COM-Ports auf.
@@ -56,7 +57,16 @@
   background(0);
   text("Last Received: " + inByte, 10, 130); 
   text("Last Sent: " + whichKey, 10, 100);
+  text("Messwerte: " + ESCLaufvariable, 10,10);
 
+     myPort.write(ESCWerte[ESCLaufvariable]);
+     
+     if( ESCLaufvariable < (fahrprofil.getRowCount() - 1) && ESCsendNextValue == true){
+     ESCLaufvariable++;
+     ESCsendNextValue = false;
+     
+     }
+  
 
 
     
@@ -70,27 +80,27 @@
     servo[1] = ziel[1];
     servo[2] = ziel[2];
     servo[3] = ziel[3];
-    myPort.write(1);
+    //myPort.write(1);
     gewicht[0] = ziel[4];
     gewicht[1] = ziel[5];
     gewicht[2] = ziel[6];
     gewicht[3] = ziel[7];
-    myPort.write(2);
+    //myPort.write(2);
     strom[0] = ziel[8];
     strom[1] = ziel[9];
     strom[2] = ziel[10];
     strom[3] = ziel[11];
-    myPort.write(3);
+    //myPort.write(3);
     beschleunigungX[0] = ziel[12];
     beschleunigungX[1] = ziel[13];
     beschleunigungX[2] = ziel[14];
     beschleunigungX[3] = ziel[15];
-    myPort.write(4);
+    //myPort.write(4);
     beschleunigungY[0] = ziel[16];
     beschleunigungY[1] = ziel[17];
     beschleunigungY[2] = ziel[18];
     beschleunigungY[3] = ziel[19];
-    myPort.write(5);
+    //myPort.write(5);
     beschleunigungZ[0] = ziel[20];
     beschleunigungZ[1] = ziel[21];
     beschleunigungZ[2] = ziel[22];
@@ -99,6 +109,7 @@
     }
     beschleunigungZ[3] = ziel[23];
     
+    ESCsendNextValue = true;
     inByte = umwandelnDouble(servo);
     output.print(messungNr + ";" + String.format(Locale.US, "%.2f",inByte)); //hier neue Messwerte hinzufügen
     inByte = umwandelnDouble(gewicht);
@@ -137,13 +148,14 @@
     //}
     //if(messwertNr > 5){
     //     // output.println(); //hier neue Messwerte hinzufügen
-    //            ESCsend = true;
+    //            ESCsendNextValue = true;
     //messwertNr = 0;
     //messungNr++;
   }
 //}
   catch(RuntimeException e) {
     e.printStackTrace(); //<>//
+    e.getCause();
   }
   
   }
@@ -166,7 +178,7 @@
   }
   return (double)vorkomma + (double)nachkomma / 100.0;
   }
-  else return 180394.11;// magic error number, if something doesnt work
+  else return -1;// magic error number, if something doesnt work
   
   }
   
