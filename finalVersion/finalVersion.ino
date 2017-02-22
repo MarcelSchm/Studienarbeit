@@ -9,7 +9,7 @@
 // Beschleunigungssensor-Pins A4(SDA) & A5 (SCL) da I2C Schnittstelle
 
 #define PROCESSING  //für weitergabe an processing
-//#define DEBUGSERIAL  //Waagen-Messwerte über Arduino Serial Monitor
+//#define DEBUGSCALE  //Waagen-Messwerte über Arduino Serial Monitor
 //#define CALIBRATIONSCALE  // zum kalibrieren der Waage. hiermit kann der calibration factor eingestellt werden mit + und -
 //#define DEBUGSERVO // Manuell Werte für den ESC vorgeben
 //#define DEBUGCURRENT //Strom-Messwerte über Arduino Serial Monitor
@@ -27,12 +27,15 @@ byte servoAcknowledgeByte[4] = {0};
 byte beschleunigungX[4] = {0};
 byte beschleunigungY[4] = {0};
 byte beschleunigungZ[4] = {0};
-unsigned long zeit = 0; //Abstand zwischen Messungen
+unsigned long zeitScale = 0; //Abstand zwischen Messungen 
+unsigned long zeitServo = 0; //Abstand zwischen Messungen 
+unsigned long zeitCurrent = 0; //Abstand zwischen Messungen 
+unsigned long zeitAccelerometer = 0; //Abstand zwischen Messungen 
 bool isValueReady[4] = {false};
 
 int servoValue = 0;
 
-const int numReadingsCurrent = 30;
+const int numReadingsCurrent = 3; //number of readings for smoothing algorithm
 float CurrentReadings[numReadingsCurrent];      // Strom Messwerte des Analog Inputs
 int index = 0;                  // Index der Strom Messwerte
 float total = 0;                  // Strom gesamtwert
@@ -42,9 +45,9 @@ float currentValue = 0;
 
 
 void setup() {
-  Serial.begin(9600); //TODO (Serial hier korrekt?)
+  Serial.begin(115200); //TODO (Serial hier korrekt?)
   /***********************WAAGE*******************************/
-#ifdef DEBUGSERIAL
+#ifdef DEBUGSCALE
   Serial.println("HX711 calibration sketch");
   Serial.println("Remove all weight from scale");
   Serial.println("After readings begin, place known weight on scale");
@@ -56,7 +59,9 @@ void setup() {
   scale.tare(); //Reset the scale to 0
 
   long zero_factor = scale.read_average(); //Nullmessung
-#ifdef DEBUGSERIAL
+  scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
+ 
+#ifdef DEBUGSCALE
   Serial.print("Zero factor: "); //kann genutzt werden, um die waage nicht mehr tarieren zu müssen.vllt noch sinnvoll
   Serial.println(zero_factor);
 #endif
@@ -129,8 +134,14 @@ void loop() {
 #endif
 
 #ifdef SERIALOUTPUTALL
+ zeitServo = millis();
+ umwandelnBytes(servoValue, servo);
+  zeitServo = millis() - zeitServo;
   Serial.print("Servo Value:  ");
   Serial.print(servoValue);
+  Serial.print(" Zeit: ");
+  Serial.print(zeitServo);
+  
 #endif
 
 
@@ -141,28 +152,31 @@ void loop() {
 
 
   /****************************WAAGE**************************************************************/
-  scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
-#ifdef DEBUGSERIAL
-  Serial.print("Reading: ");
-  zeit = millis();
+  #ifdef DEBUGSCALE
+ Serial.print("Reading: ");
+  zeitScale = millis();
   scale.get_units();
-  zeit = millis() - zeit;
+  zeitScale = millis() - zeitScale;
   Serial.print(scale.get_units());
   Serial.print(" g");
   Serial.print(" calibration_factor: ");
   Serial.print(calibration_factor);
   Serial.print(" Zeit(in Milisek) zwischen Messwerten: ");
-  Serial.print(zeit);
+  Serial.print(zeitScale);
   Serial.println();
 #endif
 
 #ifdef PROCESSING
   if (isValueReady[3] == false) {
+    scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
+ 
     umwandelnBytes(scale.get_units(), gewicht);
     isValueReady[1] = true;
   }
 #endif
+
 #ifdef CALIBRATIONSCALE
+ scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
   if (Serial.available())
   {
     char temp = Serial.read();
@@ -177,28 +191,34 @@ void loop() {
 #endif
 
 #ifdef SERIALOUTPUTALL
+ zeitScale = millis();
+  float temp = scale.get_units();
+  zeitScale = millis() - zeitScale;
   Serial.print("\tGewicht: ");
-  Serial.print(scale.get_units());
+  Serial.print(temp);
+  Serial.print(" Zeit: ");
+  Serial.print(zeitScale);
 #endif
   /****************************WAAGE-ENDE******************************************************************/
 
   /*******************************STROMSENSOR**********************************************************************/
   total = total - CurrentReadings[index];
   CurrentReadings[index] = analogRead(AMPPIN); //Raw data reading
-  //Data processing:510-raw data from analogRead when the input is 0;
-  // 5-5v; the first 0.04-0.04V/A(sensitivity); the second 0.04-offset val;
-  CurrentReadings[index] = (CurrentReadings[index] - 512) * 5 / 1024 / 0.04 - 0.12;
-
+  //Data processing:512->raw data from analogRead when the input is 0;
+// *5/1024->analog read to 5 V ; the first 0.04->0.04V/A(sensitivity); the second 0.04->offset val;
+  CurrentReadings[index] = (CurrentReadings[index] - 512) * 5 / 1024 / 0.04 ;//- 0.12;
   total = total + CurrentReadings[index];
   index = index + 1;
-  if (index >= numReadingsCurrent)
+  if (index >= numReadingsCurrent){
     index = 0;
+  }
   average = total / numReadingsCurrent; //Smoothing algorithm (http://www.arduino.cc/en/Tutorial/Smoothing)
   currentValue = average;
+   zeitCurrent = millis() - zeitCurrent;
 
 #ifdef PROCESSING
   if (isValueReady[3] == false) {
-    umwandelnBytes(currentValue, strom);
+    umwandelnBytes(currentValue, strom); // hier wieder tauschen: currentValue
     isValueReady[2] = true;
   }
 #endif
@@ -212,11 +232,15 @@ void loop() {
 #ifdef SERIALOUTPUTALL
   Serial.print("\tStromWert: ");
   Serial.print(currentValue);
+  Serial.print(" Zeit: ");
+  Serial.print(zeitCurrent);
 #endif
   /*******************************STROMSENSOR-ENDE***********************************************************************/
 
   /********************************BESCHLEUNIGUNGSSENSOR*************************************************************************************/
+  zeitAccelerometer = millis();
   beschleunigungssensor->accelerometerRead();
+zeitAccelerometer = millis() - zeitAccelerometer;
 
 #ifdef PROCESSING
   if (isValueReady[3] == false) {
@@ -241,9 +265,12 @@ void loop() {
 #endif
 
 #ifdef SERIALOUTPUTALL
+
   Serial.print("\tx = ");
   Serial.print(beschleunigungssensor->acc_x);
   Serial.print("g");
+   Serial.print(" Zeit: ");
+  Serial.print(zeitAccelerometer);
   Serial.print("\ty = ");
   Serial.print(beschleunigungssensor->acc_y);
   Serial.print("g");

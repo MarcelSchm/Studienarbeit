@@ -19,6 +19,7 @@
   Table fahrprofil;
   int[] ESCWerte;
   int ESCLaufvariable = 0;
+  int test = 0;
   boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert
   
   
@@ -31,7 +32,8 @@
   // List all the available serial ports:
   printArray(Serial.list());
   
-  fahrprofil = loadTable("C:/Users/User/Dropbox/Scripte/7. Semester/Studienarbeit/Arduino Code" + "/Sprung2.csv", "header");
+  
+  fahrprofil = loadTable("C:/Users/User/Dropbox/Scripte/7. Semester/Studienarbeit/Arduino Code" + "/test.csv", "header");
   ESCWerte = new int[fahrprofil.getRowCount()];
    println(fahrprofil.getRowCount() + " total rows in fahrprofil");
   for (TableRow row : fahrprofil.rows()) {
@@ -45,8 +47,9 @@
   // listet alle verfügbaren COM-Ports auf.
   // Im Geräte Manager schauen, welcher COM-Port der Arduino ist
   // und bei portName das entsprechende array element wählen
+  text("" + Serial.list(),40,10);
   String portName = Serial.list()[2]; // hier COM-Port ändern
-  myPort = new Serial(this, portName, 9600);
+  myPort = new Serial(this, portName, 115200);
   myPort.bufferUntil('e');
   output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv");
   output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
@@ -57,7 +60,7 @@
   background(0);
   text("Last Received: " + inByte, 10, 130); 
   text("Last Sent: " + whichKey, 10, 100);
-  text("Messwerte: " + ESCLaufvariable, 10,10);
+  text("Messwerte: " + test, 10,10);
 
      myPort.write(ESCWerte[ESCLaufvariable]);
      
@@ -80,6 +83,7 @@
     servo[1] = ziel[1];
     servo[2] = ziel[2];
     servo[3] = ziel[3];
+    test++;
     //myPort.write(1);
     gewicht[0] = ziel[4];
     gewicht[1] = ziel[5];
