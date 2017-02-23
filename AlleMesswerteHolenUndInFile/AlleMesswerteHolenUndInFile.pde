@@ -1,5 +1,8 @@
   import processing.serial.*;
   import java.util.Locale;
+  import g4p_controls.*;
+  
+  GButton[] SerialPortsButton;
   
   Serial myPort;      // The serial port
   int whichKey = -1;  // Variable to hold keystoke values
@@ -21,19 +24,29 @@
   int ESCLaufvariable = 0;
   int test = 0;
   boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert
-  
+   boolean isButtonPressed = false; // warte auf COM-Port auswahl
+   String portName; // Com-Port name
+   String fahrprofilPath;
   
   void setup() {
-  size(400, 300);
+  size(500, 300);
   // create a font with the third font available to the system:
   PFont myFont = createFont(PFont.list()[2], 14);
   textFont(myFont);
   
-  // List all the available serial ports:
+  // List all the available serial ports and wait for decision:
   printArray(Serial.list());
-  
-  
-  fahrprofil = loadTable("C:/Users/User/Dropbox/Scripte/7. Semester/Studienarbeit/Arduino Code" + "/test.csv", "header");
+ SerialPortsButton = new GButton[Serial.list().length]; // make buttons for every Com-port
+ for( int i = 0; i < SerialPortsButton.length; i++){
+   SerialPortsButton[i] = new GButton(this,10,(i+1)*30,200,20); // buttons untereinander anordnen
+   SerialPortsButton[i].setText( Serial.list()[i]);
+ }
+
+ //while( isButtonPressed == false){//wait for button pressing
+ //}
+
+   selectInput("Auswählen der Fahrprofil Datei: ", "fileSelected");
+  fahrprofil = loadTable(fahrprofilPath, "header");
   ESCWerte = new int[fahrprofil.getRowCount()];
    println(fahrprofil.getRowCount() + " total rows in fahrprofil");
   for (TableRow row : fahrprofil.rows()) {
@@ -47,8 +60,7 @@
   // listet alle verfügbaren COM-Ports auf.
   // Im Geräte Manager schauen, welcher COM-Port der Arduino ist
   // und bei portName das entsprechende array element wählen
-  text("" + Serial.list(),40,10);
-  String portName = Serial.list()[2]; // hier COM-Port ändern
+  portName = Serial.list()[2]; // hier COM-Port ändern
   myPort = new Serial(this, portName, 115200);
   myPort.bufferUntil('e');
   output = createWriter(year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv");
@@ -170,6 +182,15 @@
   whichKey = key;
   }
   
+  void fileSelected(File selection){
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    fahrprofilPath = selection.getAbsolutePath();
+  }
+  }
+  
   double umwandelnDouble(byte array[]) {
   if('@'==(array[3])){
    int vorkomma = ((array[0] & 0x0F ) << 8) | (array[1] & 0xFF) ;
@@ -184,6 +205,15 @@
   }
   else return -1;// magic error number, if something doesnt work
   
+  }
+  
+  void handleButtonEvents(GButton button, GEvent event){
+    for(GButton buttonCounter : SerialPortsButton){
+      if(buttonCounter == button){
+      buttonCounter.getText();
+      }
+    }
+  isButtonPressed =true;
   }
   
   void mousePressed(){
