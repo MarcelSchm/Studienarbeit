@@ -3,7 +3,7 @@ import processing.serial.*;
 import g4p_controls.*;
 
 public void setup() {
-  size(660, 420);
+  size(560, 620);
   createCOMPortGUI(10, 30, 200, 20);
   //createFileSystemGUI(10, 60, 300);
 }
@@ -36,7 +36,10 @@ public void handleButtonEvents(GButton button, GEvent event) {
     for (GButton buttonCounter : SerialPortsButton) {
       buttonCounter.dispose();
     }
-    testButton.dispose();
+    if(testButton != null){
+     testButton.dispose();     
+    }
+
     createFileSystemGUI(10, 60, 300);
   }
   // Folder selection
@@ -65,17 +68,22 @@ public void handleFileDialog(GButton button) {
         lblInputFile.moveTo(btnInput.getX(), btnInput.getY(), GControlMode.CORNER);
         lblInputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         titleInputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-        // open File TODO
+        // open File 
         fahrprofil = loadTable(fname, "header");
         String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
         output = createWriter(outputPath);
         output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
-        GLabel lblOutputFile = new GLabel(this, titleInputFile.getX(), titleInputFile.getY() + 160, titleInputFile.getWidth(),titleInputFile.getHeight());
-        GLabel titleOutputFile = new GLabel(this, titleInputFile.getX(), titleInputFile.getY() + 60, titleInputFile.getWidth(),titleInputFile.getHeight());
+       
+        GLabel titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(),titleInputFile.getHeight());
+        GLabel lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(),lblInputFile.getHeight() + 50 );
+        titleOutputFile.setText("Name und Pfad der Ausgabedatei: ", GAlign.LEFT, GAlign.MIDDLE);
+        titleOutputFile.setOpaque(true);
+        titleOutputFile.setTextBold();
         lblOutputFile.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
-        lblOutputFile.setText(outputPath);
+        lblOutputFile.setText(sketchPath("") + "\n\n" + outputPath);
         lblOutputFile.setOpaque(true);
-        lblOutputFile.setLocalColorScheme(G4P.CYAN_SCHEME);
+        output.flush();
+        output.close();
         
       } else {
         lblInputFile.setText("Es liegt kein passendes Dateiformat vor. Bitte eine CSV-Datei wählen");
