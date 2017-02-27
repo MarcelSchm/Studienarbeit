@@ -21,6 +21,7 @@ BMA180* beschleunigungssensor;
 
 float calibration_factor = -246.5; //-246 für tablet, -247 für handy (Referenzwerte für lineare Interpol.
 byte gewicht[4] = {0}; // Gewicht in 3 Bytes, ersten 2 byte Ganzzahl(plus evtl startzeichen), letzte byte komma
+byte zeit[4] = {0};
 byte strom[4] = {0};
 byte servo[4] = {0};
 byte servoAcknowledgeByte[4] = {0};
@@ -288,12 +289,19 @@ zeitAccelerometer = millis() - zeitAccelerometer;
 void messwerteSenden() {
   int gotMessage = 0;
   if (isValueReady[0] == true && isValueReady[1] == true && isValueReady[2] == true && isValueReady[3] == true) {
+    umwandelnZeit(millis(),zeit);
     Serial.write(servo[0]);
     Serial.write(servo[1]);
     Serial.write(servo[2]);
     Serial.write(servo[3]);
     //    while (1 != Serial.read() ) { //warte auf signal
     //    }
+    Serial.write(zeit[0]);
+    Serial.write(zeit[1]);
+    Serial.write(zeit[2]);
+    Serial.write(zeit[3]);
+    Serial.write(zeit[4]);
+    
     Serial.write(gewicht[0]);
     Serial.write(gewicht[1]);
     Serial.write(gewicht[2]);
@@ -322,12 +330,14 @@ void messwerteSenden() {
     Serial.write(beschleunigungZ[1]);
     Serial.write(beschleunigungZ[2]);
     Serial.write('e'); // statt @ ein absolutes Endbyte
-   // Serial.println();
+//    Serial.println("es wurde gesendet");
 
     // while (6 != Serial.read() ) { //warte auf signal
     //    }
   }
-  // Serial.print(isValueReady[0],BIN);
+//  Serial.print("ZEit");
+//  Serial.println(millis());
+//  // Serial.print(isValueReady[0],BIN);
   //  Serial.print(isValueReady[1],BIN);
   //   Serial.print(isValueReady[2],BIN);
   //    Serial.print(isValueReady[3],BIN);
@@ -344,6 +354,15 @@ void messwerteSenden() {
 
 }
 
+void umwandelnZeit(unsigned long zeit, byte array[]){
+  array[0] = (zeit & 0xFF000000) >> 24;
+  array[1] = (zeit & 0x00FF0000) >> 16;
+  array[2] = (zeit & 0x0000FF00) >> 8;
+  array[3] = (zeit & 0x000000FF);
+  array[4] = '@';
+  }
+
+  
 void umwandelnBytes(double zahl, byte array[]) {
   bool negativ = false;
   if ( zahl < 0.000) {
