@@ -289,7 +289,8 @@ zeitAccelerometer = millis() - zeitAccelerometer;
 void messwerteSenden() {
   int gotMessage = 0;
   if (isValueReady[0] == true && isValueReady[1] == true && isValueReady[2] == true && isValueReady[3] == true) {
-    umwandelnZeit(millis(),zeit);
+    
+    umwandelnZeit(micros(),zeit); 
     Serial.write(servo[0]);
     Serial.write(servo[1]);
     Serial.write(servo[2]);
@@ -330,7 +331,7 @@ void messwerteSenden() {
     Serial.write(beschleunigungZ[1]);
     Serial.write(beschleunigungZ[2]);
     Serial.write('e'); // statt @ ein absolutes Endbyte
-//    Serial.println("es wurde gesendet");
+    //Serial.println(temptestcounter);
 
     // while (6 != Serial.read() ) { //warte auf signal
     //    }

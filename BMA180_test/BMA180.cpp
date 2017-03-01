@@ -73,7 +73,7 @@ void BMA180::readFrom( byte address, int num, byte buff[]){
   Wire.endTransmission();            
 
   Wire.beginTransmission(BMA180);                 
-  Wire.requestFrom(BMA180,num);    // Request num bits from sensor
+  Wire.requestFrom(BMA180,num);    // Request num bytes from sensor
 
   for (int i = 0; i < num; i++)
     if(Wire.available()) buff[i] = Wire.read();          

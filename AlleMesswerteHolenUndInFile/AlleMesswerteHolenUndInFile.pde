@@ -48,7 +48,7 @@ PrintWriter output;
 boolean isGUIReady = false;
 GButton btnEnd;
 /**************************************************************************/
-  
+
   void setup() {
   size(560, 620);
   // create a font with the third font available to the system:
@@ -64,7 +64,9 @@ GButton btnEnd;
   text("Last Sent: " + whichKey, 100, 100);
   text("Messwerte: " + test, 400,20);
 
-     //myPort.write(ESCWerte[ESCLaufvariable]);
+     myPort.write(ESCWerte[ESCLaufvariable]);
+     //println("ESCVariable: " + ESCLaufvariable);
+     //println("fahrprofil: " + (fahrprofil.getRowCount() - 1));
      
      if( ESCLaufvariable < (fahrprofil.getRowCount() - 1) && ESCsendNextValue == true){
      ESCLaufvariable++;
@@ -117,6 +119,7 @@ GButton btnEnd;
     
     ESCsendNextValue = true;
     inByte = umwandelnDouble(servo);
+    inByte = map((int)inByte,0,179,0,100);
     output.print(messungNr + ";" + String.format(Locale.US, "%.2f",inByte)); //hier neue Messwerte hinzufügen
     inByte = umwandelnZeit(zeit);
     output.print( ";" + String.format(Locale.US, "%.2f",inByte)); 
@@ -152,8 +155,8 @@ GButton btnEnd;
   if('@' == (array[4])){
     long temp = 0;
     temp = (((array[0] << 24) & 0xFF000000) | ((array[1] << 16) & 0x00FF0000) | ((array[2] << 8)& 0x0000FF00) | ((array[3] & 0x000000FF)));
-    println("" + binary(((array[0] << 24) | (array[1] << 16) | (array[2] << 8) | (array[3]))));
-    println(temp);
+    //println("binär: " + binary(((array[0] << 24) | (array[1] << 16) | (array[2] << 8) | (array[3]))));
+    //println(temp);
     return temp;
   } else return -1;// magic error number, if something doesnt work 
   }
@@ -189,6 +192,10 @@ GButton btnEnd;
   //exit();
   //}
   //}
+  public int map(int x, int inMin, int inMax, int outMin, int outMax){ //map a range of values to another range of values
+
+    return (int)(((x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin)+0.5);// 0.5 um korrekt zu runden
+  }
   
  /******************************UI-kopie**********************************************/
  public void handleButtonEvents(GButton button, GEvent event) { 
@@ -196,7 +203,7 @@ GButton btnEnd;
   
   // End-Programm Selection
   if(button == btnEnd){
-    if( ESCsendNextValue == true){
+    if(ESCLaufvariable < (fahrprofil.getRowCount() - 1)){
     G4P.showMessage(this,"Bitte das Programm nicht schließen, der Messvorgang ist noch nicht beendet","Messung läuft",G4P.WARNING);
     } else {
    lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
@@ -265,7 +272,7 @@ public void handleFileDialog(GButton button) {
         fahrprofil = loadTable(fname, "header");
         String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
         output = createWriter(outputPath);
-        output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in ms" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
+        output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
        
         titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(),titleInputFile.getHeight());
         lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(),lblInputFile.getHeight() + 50 );
@@ -279,7 +286,7 @@ public void handleFileDialog(GButton button) {
    println(fahrprofil.getRowCount() + " total rows in fahrprofil");
   for (TableRow row : fahrprofil.rows()) {
     //println(row.getString("ESC-Werte"));
-    ESCWerte[ESCLaufvariable] = Integer.parseInt(row.getString("ESC-Werte"));
+    ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")),0,100,0,179); // mapping 0% to 100% to Servo values from 0 to 179
     ESCLaufvariable++;
   }
   println(" VAriable: " + ESCLaufvariable);
@@ -288,7 +295,8 @@ public void handleFileDialog(GButton button) {
     btnEnd = new GButton(this,SerialPortsButton[0].getX() + SerialPortsButton[0].getWidth() + 80 , SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
     btnEnd.setText("Beenden");
     btnEnd.setLocalColorScheme(G4P.RED_SCHEME);
-    progress = new GLabel(this, lblOutputFile.getX(), lblOutputFile.getY() + lblOutputFile.getHeight() + 10, titleOutputFile.getHeight(), titleOutputFile.getWidth());
+    progress = new GLabel(this, lblOutputFile.getX(), lblOutputFile.getY() + lblOutputFile.getHeight() + 10, titleOutputFile.getWidth(), titleOutputFile.getHeight());
+    progress.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
     progress.setText("Messung läuft...");
     progress.setTextItalic();
     progress.setLocalColorScheme(G4P.YELLOW_SCHEME);
@@ -317,7 +325,7 @@ public void createFileSystemGUI(int x, int y, int w) {
   lblInputFile.setLocalColorScheme(G4P.BLUE_SCHEME);
 }
 
-public void createCOMPortGUI(int x, int y, int w, int h) {
+public void createCOMPortGUI(int x, int  y, int w, int h) {
   comPortTitle = new GLabel(this, x, y, w, 20);
   comPortTitle.setText("Bitte COM-Port wählen", GAlign.LEFT, GAlign.MIDDLE);
   comPortTitle.setOpaque(true);
