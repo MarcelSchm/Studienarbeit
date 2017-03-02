@@ -8,26 +8,20 @@ void setup(){
   Serial.println();
   beschleunigungssensor = new BMA180();
 
- // beschleunigungssensor->readFrom(0x35,6,temp)
-  
-  Wire.beginTransmission(0x40);  // Address of the BMA180 device
-  Wire.write(0x36);      // Send register address
-  Wire.write(B11111101);          // Send value 
-  Wire.endTransmission();
   
   
   beschleunigungssensor->readFrom(0x35,6,temp);
-  Serial.print("Register 0x3A:  ");
+  Serial.print("Register OFFSET_LSB1:  ");
   Serial.println(temp[5],BIN);
-   Serial.print("Register 0x39:  ");
+   Serial.print("Register OFFSET_LSB2:  ");
   Serial.println(temp[4],BIN);
-   Serial.print("Register 0x38:  ");
+   Serial.print("Register OFFSET_T:  ");
   Serial.println(temp[3],BIN);
-   Serial.print("Register 0x37:  ");
+   Serial.print("Register OFFSET_x:  ");
   Serial.println(temp[2],BIN);
-   Serial.print("Register 0x36:  ");
+   Serial.print("Register OFFSET_y:  ");
   Serial.println(temp[1],BIN); 
-  Serial.print("Register 0x35:  ");
+  Serial.print("Register OFFSET_z:  ");
   Serial.println(temp[0],BIN);
 }
 

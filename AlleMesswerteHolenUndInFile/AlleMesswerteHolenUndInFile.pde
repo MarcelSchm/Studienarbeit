@@ -64,7 +64,7 @@ void draw() { //<>//   //<>//
     text("Last Sent: " + whichKey, 100, 100);
     text("Messwerte: " + test, 400, 20);
 
-    //myPort.write(ESCWerte[ESCLaufvariable]);
+    myPort.write(ESCWerte[ESCLaufvariable]);
     //println("ESCVariable: " + ESCLaufvariable);
     //println("fahrprofil: " + (fahrprofil.getRowCount() - 1));
 

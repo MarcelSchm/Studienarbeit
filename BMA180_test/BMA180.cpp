@@ -82,18 +82,33 @@ void BMA180::readFrom( byte address, int num, byte buff[]) {
 }
 
 void BMA180::rectifyOffset(byte offset_x[2], byte offset_y[2], byte offset_z[2]) {
-  byte tempOffset_x, tempOffset_y, tempOffset_z;
-  byte readTempOffset_x[2], readTempOffset_y[2], readTempOffset_z[2];
+  byte tempOffset_x, tempOffset_y, tempOffset_z, temp;
+  byte readTempOffset_xMSB, readTempOffset_xLSB, readTempOffset_yMSB, readTempOffset_yLSB, readTempOffset_zMSB, readTempOffset_zLSB;
   
-  readFrom(OFFSET_LSB1, 1, readTempOffset_x[0]);
-  readFrom(OFFSET_X, 1, readTempOffset_x[1]);
-  tempOffset_x = (readTempOffset_x[0] & 0x0F) | ((offset_x[0] & 0x0F) << 4);
-  writeTo(OFFSET_LSB1, tempOffset_x);
-  tempOffset_x = ((offset_x[1] & 0x0F) << 4) | ((offset_x[0] & 0xF0) >> 4);
-  writeTo(OFFSET_x, tempOffset_x);
+//  readFrom(OFFSET_LSB1, 1, readTempOffset_xLSB);
+//  readFrom(OFFSET_X, 1, readTempOffset_xMSB);
+//  tempOffset_x = (readTempOffset_xLSB & 0x0F) | ((offset_x[0] & 0x0F) << 4);
+//  writeTo(OFFSET_LSB1, tempOffset_x);
+//  tempOffset_x = ((offset_x[1] & 0x0F) << 4) | ((offset_x[0] & 0xF0) >> 4);
+//  writeTo(OFFSET_X, tempOffset_x);
 
-  readFrom(OFFSET_LSB2,1, readTempOffset_y[0]);
-  readTempOffset_z[0] = readTempOffset_y[0] & 0xF0
+  readFrom(OFFSET_LSB2,1, readTempOffset_yLSB); //actually LSB Y and Z
+  readTempOffset_zLSB = (readTempOffset_yLSB & 0xF0);
+//  readTempOffset_yLSB = (readTempOffset_yLSB & 0x0F);
+//  readFrom(OFFSET_Y,1, readTempOffset_yMSB);
+//  tempOffset_y = (readTempOffset_yLSB & 0x0F)
+  temp = (offset_y[0] & 0x0F) | ((offset_z[0] & 0x0F) << 4);
+  writeTo(OFFSET_LSB2, temp);
+  
+  temp = ((offset_y[0] & 0xF0) >> 4) | ((offset_y[1] & 0x0F) << 4); 
+  writeTo(OFFSET_Y, temp);
+  
+  temp = ((offset_z[0] & 0xF0) >> 4) | ((offset_z[1] & 0x0F) << 4); 
+  writeTo(OFFSET_Z, temp);
+
+
+
+
 
 
 }
