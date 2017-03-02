@@ -8,6 +8,10 @@ void setup(){
   Serial.println();
   beschleunigungssensor = new BMA180();
 
+byte x[] = {B11111011,B00001011};//{B00000011,B01101011}
+byte y[] = {B01100110,B00001001};//{B00001001,B01100110}
+byte z[] = {B01111110,B00000010};//{B00000010,B01111110}
+  beschleunigungssensor->rectifyOffset(x,y,z);
   
   
   beschleunigungssensor->readFrom(0x35,6,temp);
