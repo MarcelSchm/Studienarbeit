@@ -1,8 +1,7 @@
-import processing.serial.*;
+import processing.serial.*; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Locale;
 import g4p_controls.*;
 
-// GButton[] SerialPortsButton;
 
 // Serial myPort;      // The serial port
 int whichKey = -1;  // Variable to hold keystoke values
@@ -45,8 +44,8 @@ GButton testButton;
 String portName;
 Table fahrprofil;
 PrintWriter output;
-boolean isGUIReady = false;
-GButton btnEnd;
+boolean isGUIReady = false, startprgm = false;
+GButton btnEnd, btnStart;
 /**************************************************************************/
 
 void setup() {
@@ -54,10 +53,10 @@ void setup() {
   // create a font with the third font available to the system:
   PFont myFont = createFont(PFont.list()[2], 14);
   textFont(myFont);
-  createCOMPortGUI(10, 30, 200, 20); //<>// //<>//
+  createCOMPortGUI(10, 30, 200, 20);
 }
 
-void draw() { //<>//   //<>//
+void draw() { //<>//  
   background(0);
   if ( isGUIReady == true) {
     text("Last Received: " + inByte, 100, 130); 
@@ -109,8 +108,8 @@ void serialEvent(Serial myPort) {
     beschleunigungZ[0] = ziel[25];
     beschleunigungZ[1] = ziel[26];
     beschleunigungZ[2] = ziel[27];
-    if (ziel[28] == 'e') { //last byte sended is 'e', changed so that 'umwandelnDouble' will work //<>// //<>//
-      ziel[28] = '@'; //<>//
+    if (ziel[28] == 'e') { //last byte sended is 'e', changed so that 'umwandelnDouble' will work
+      ziel[28] = '@';
     }
     beschleunigungZ[3] = ziel[28];
 
@@ -131,15 +130,14 @@ void serialEvent(Serial myPort) {
     inByte = umwandelnDouble(beschleunigungZ);
     output.println( ";" + String.format(Locale.US, "%.2f", inByte));
     messungNr++;
-    //<>// //<>//
   }
 
   catch(RuntimeException e) {
-    e.printStackTrace(); //<>// //<>//
+    e.printStackTrace();
     e.getCause();
   }
-}  //<>//
- //<>//
+} 
+
 //void keyPressed() {
 //// Send the keystroke out:
 //myPort.write(key);
@@ -188,8 +186,14 @@ double umwandelnDouble(byte array[]) {
 //}
 //}
 public int map(int x, int inMin, int inMax, int outMin, int outMax) { //map a range of values to another range of values
-//TODO clipping der grenzen
-  return (int)(((x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin)+0.5);// 0.5 um korrekt zu runden
+
+  if (x < inMin) {  // if not in range
+    return outMin;
+  } else if (x > inMax) {
+    return outMax;
+  } else {
+    return (int)(((x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin)+0.5);// 0.5 um korrekt zu runden
+  }
 }
 
 /******************************UI-kopie**********************************************/
@@ -199,13 +203,26 @@ public void handleButtonEvents(GButton button, GEvent event) {
   // End-Programm Selection
   if (button == btnEnd) {
     if (ESCLaufvariable < (fahrprofil.getRowCount() - 1)) {
-      G4P.showMessage(this, "Bitte das Programm nicht schließen, der Messvorgang ist noch nicht beendet", "Messung läuft", G4P.WARNING);
+      int reply = G4P.selectOption(this, "Sind Sie sicher, dass sie das Programm vorzeitig beenden wollen?", "Messung läuft", G4P.INFO, G4P.YES_NO);
+      if (reply == G4P.YES) {
+        lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+        titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+        progress.setText("Messung beendet");
+        output.flush();
+        output.close();
+      }
     } else {
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       output.flush();
       output.close();
     }
+  }
+  //start-button Selection
+  if (button == btnStart) {
+    startprgm = true;
+    println("gedrückt");
+    handleFileDialog(button);
   }
 
   //COM-Port selection
@@ -263,38 +280,49 @@ public void handleFileDialog(GButton button) {
         lblInputFile.moveTo(btnInput.getX(), btnInput.getY(), GControlMode.CORNER);
         lblInputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         titleInputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-        // open File 
-        fahrprofil = loadTable(fname, "header");
-        String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
-        output = createWriter(outputPath);
-        output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
+        btnStart = new GButton(this, lblInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, lblInputFile.getWidth() / 2, 2 * titleInputFile.getHeight());
+        btnStart.setText("Messung starten");
+        println("FileDialog");
+        
 
-        titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(), titleInputFile.getHeight());
-        lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(), lblInputFile.getHeight() + 50 );
-        titleOutputFile.setText("Name und Pfad der Ausgabedatei: ", GAlign.LEFT, GAlign.MIDDLE);
-        titleOutputFile.setOpaque(true);
-        titleOutputFile.setTextBold();
-        lblOutputFile.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
-        lblOutputFile.setText(sketchPath("") + "\n\n" + outputPath);
-        lblOutputFile.setOpaque(true);
-        ESCWerte = new int[fahrprofil.getRowCount()];
-        println(fahrprofil.getRowCount() + " total rows in fahrprofil");
-        for (TableRow row : fahrprofil.rows()) {
-          //println(row.getString("ESC-Werte"));
-          ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")), 0, 100, 0, 179); // mapping 0% to 100% to Servo values from 0 to 179
-          ESCLaufvariable++;
+        //start button
+        if (startprgm == true) {
+          // open File 
+          fahrprofil = loadTable(fname, "header");
+          String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
+          output = createWriter(outputPath);
+          output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
+
+          titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(), titleInputFile.getHeight());
+          lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(), lblInputFile.getHeight() + 50 );
+          titleOutputFile.setText("Name und Pfad der Ausgabedatei: ", GAlign.LEFT, GAlign.MIDDLE);
+          titleOutputFile.setOpaque(true);
+          titleOutputFile.setTextBold();
+          lblOutputFile.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
+          lblOutputFile.setText(sketchPath("") + "\n\n" + outputPath);
+          lblOutputFile.setOpaque(true);
+          ESCWerte = new int[fahrprofil.getRowCount()];
+          println(fahrprofil.getRowCount() + " total rows in fahrprofil");
+          for (TableRow row : fahrprofil.rows()) {
+            //println(row.getString("ESC-Werte"));
+            ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")), 0, 100, 0, 179); // mapping 0% to 100% to Servo values from 0 to 179
+            ESCLaufvariable++;
+          }
+          println(" VAriable: " + ESCLaufvariable);
+          ESCLaufvariable = 0;
+          isGUIReady = true;
+
+          btnEnd = new GButton(this, testButton.getX() + titleOutputFile.getWidth() + 80, testButton.getY(), testButton.getWidth() / 2, testButton.getHeight());
+          //btnEnd = new GButton(this, SerialPortsButton[0].getX() + titleOutputFile.getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
+
+          btnEnd.setText("Stop & Store");
+          btnEnd.setLocalColorScheme(G4P.YELLOW_SCHEME);
+          progress = new GLabel(this, lblOutputFile.getX(), lblOutputFile.getY() + lblOutputFile.getHeight() + 10, titleOutputFile.getWidth(), titleOutputFile.getHeight());
+          progress.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
+          progress.setText("Messung läuft...");
+          progress.setTextItalic();
+          progress.setLocalColorScheme(G4P.YELLOW_SCHEME);
         }
-        println(" VAriable: " + ESCLaufvariable);
-        ESCLaufvariable = 0;
-        isGUIReady = true;
-        btnEnd = new GButton(this, SerialPortsButton[0].getX() + SerialPortsButton[0].getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
-        btnEnd.setText("Beenden");
-        btnEnd.setLocalColorScheme(G4P.RED_SCHEME);
-        progress = new GLabel(this, lblOutputFile.getX(), lblOutputFile.getY() + lblOutputFile.getHeight() + 10, titleOutputFile.getWidth(), titleOutputFile.getHeight());
-        progress.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
-        progress.setText("Messung läuft...");
-        progress.setTextItalic();
-        progress.setLocalColorScheme(G4P.YELLOW_SCHEME);
       } else {
         lblInputFile.setText("Es liegt kein passendes Dateiformat vor. Bitte eine CSV-Datei wählen");
         lblInputFile.setLocalColorScheme(G4P.RED_SCHEME);
