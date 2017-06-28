@@ -23,7 +23,8 @@ int messwertNr = 0; // messwert Nr. der Sensoren z.B. 1=Waage, 2=Stromsensor
 int[] ESCWerte;
 int ESCLaufvariable = 0;
 int test = 0;
-boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert
+boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert(Serial Eveent überprüfung)
+boolean userAbbort = false;
 boolean isButtonPressed = false; // warte auf COM-Port auswahl
 //  String portName; // Com-Port name
 String fahrprofilPath;
@@ -62,7 +63,7 @@ void draw() { //<>//
   if ( isGUIReady == true) {
     text("Last Received: " + inByte, 100, 130); 
     text("Last Sent: " + whichKey, 100, 100);
-    text("Messwerte: " + test, 400, 20);
+    text("Messwerte: " + test, 400, 20); // Anzeige des Messwertes oben rechts
 
     myPort.write(ESCWerte[ESCLaufvariable]);
     //println("ESCVariable: " + ESCLaufvariable);
@@ -84,7 +85,7 @@ void serialEvent(Serial myPort) {
     servo[1] = ziel[1];
     servo[2] = ziel[2];
     servo[3] = ziel[3];
-    test++;
+    test++; // counter für Messwerte
     zeit[0] = ziel[4];
     zeit[1] = ziel[5];
     zeit[2] = ziel[6];
@@ -115,6 +116,7 @@ void serialEvent(Serial myPort) {
     beschleunigungZ[3] = ziel[28];
 
     ESCsendNextValue = true;
+    
     inByte = umwandelnDouble(servo);
     inByte = map((int)inByte, 0, 179, 0, 100);
     output.print(messungNr + ";" + String.format(Locale.US, "%.2f", inByte)); //hier neue Messwerte hinzufügen
@@ -197,7 +199,7 @@ public int map(int x, int inMin, int inMax, int outMin, int outMax) { //map a ra
   }
 }
 
-/******************************UI-kopie**********************************************/
+/******************************UI**********************************************/
 public void handleButtonEvents(GButton button, GEvent event) { 
   boolean isComPortSelected = false;
 
@@ -217,6 +219,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       progress.setText("Messung beendet und abgespeichert");
+      G4P.showMessage(this,"Die Messung wurde erfolgreich beendet","Messung beendet",G4P.INFO);
       output.flush();
       output.close();
       btnEnd.dispose();
@@ -252,9 +255,9 @@ public void handleButtonEvents(GButton button, GEvent event) {
           println(" VAriable: " + ESCLaufvariable);
           ESCLaufvariable = 0;
           isGUIReady = true;
-
-          btnEnd = new GButton(this, testButton.getX() + titleOutputFile.getWidth() + 80, testButton.getY(), testButton.getWidth() / 2, testButton.getHeight());
-          //btnEnd = new GButton(this, SerialPortsButton[0].getX() + titleOutputFile.getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
+    //WICHTIG!!! Je nach Test mit echtem Port oder dummy muss die jeweilige Zeile auskommentiert werden.
+          //btnEnd = new GButton(this, testButton.getX() + titleOutputFile.getWidth() + 80, testButton.getY(), testButton.getWidth() / 2, testButton.getHeight());
+          btnEnd = new GButton(this, SerialPortsButton[0].getX() + titleOutputFile.getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
 
           btnEnd.setText("Stop & Store");
           btnEnd.setLocalColorScheme(G4P.YELLOW_SCHEME);
