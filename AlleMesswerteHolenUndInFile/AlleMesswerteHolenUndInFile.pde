@@ -1,4 +1,4 @@
-import processing.serial.*; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+import processing.serial.*; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Locale;
 import g4p_controls.*;
 
@@ -65,10 +65,22 @@ void draw() { //<>//
     text("Last Received: " + inByte, 100, 130); 
     text("Last Sent: " + whichKey, 100, 100);
     text("Messwerte: " + messwertCounter, 400, 20); // Anzeige des Messwertes oben rechts
+    text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400,40);
+    text("ESC Laufvar" + ESCLaufvariable, 400,60);
 
-    if ( ESCLaufvariable < (fahrprofil.getRowCount() - 1) || emergencyStop == true ) {
+    if ( ESCLaufvariable > (fahrprofil.getRowCount() - 1)) {
+      //btnEnd.setText("Store");
+      emergencyStop = true;
+      myPort.stop();
+      progress.setText("Messung beendet und abgespeichert");
+      G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO);
+      output.flush();
+      output.close();
+      btnEnd.dispose();
+      while(true){}
+      
     }
-    if ( emergencyStop == true ) { //S
+    if ( ESCLaufvariable < (fahrprofil.getRowCount() - 1) && emergencyStop == true ) { 
       myPort.write(0); 
     } else {
       myPort.write(ESCWerte[ESCLaufvariable]);
@@ -86,6 +98,7 @@ void draw() { //<>//
 
 void serialEvent(Serial myPort) {
   try {
+    if(emergencyStop == false) {
     ziel = myPort.readBytes();
 
     servo[0] = ziel[0];
@@ -140,14 +153,19 @@ void serialEvent(Serial myPort) {
     inByte = umwandelnDouble(beschleunigungZ);
     output.println( ";" + String.format(Locale.US, "%.2f", inByte));
     messungNr++;
+   }
   }
-
   catch(RuntimeException e) {
     e.printStackTrace();
     e.getCause();
   }
 } 
 
+ void printToOutput(){
+ 
+ 
+ 
+ }
 //void keyPressed() {
 //// Send the keystroke out:
 //myPort.write(key);
@@ -220,7 +238,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
 
   // End-Programm Selection
   if (button == btnEnd) {
-    if (ESCLaufvariable < (fahrprofil.getRowCount() - 1)) {
+    if (ESCLaufvariable <= (fahrprofil.getRowCount() - 1)) {
       int reply = G4P.selectOption(this, "Sind Sie sicher, dass sie das Programm vorzeitig beenden wollen?", "Messung läuft", G4P.INFO, G4P.YES_NO);
       if (reply == G4P.YES) {
         lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
