@@ -26,9 +26,10 @@ int messwertCounter = 0;
 boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert(Serial Eveent überprüfung)
 boolean userAbbort = false;
 boolean isButtonPressed = false; // warte auf COM-Port auswahl
-boolean emergencyStop = false;
+boolean StopAndStore = false;
 //  String portName; // Com-Port name
 String fahrprofilPath;
+boolean OnetimeRun = false;
 
 /***********************UI-Globale Variablen*******************************/
 // Controls used for file dialog GUI 
@@ -48,7 +49,7 @@ Table fahrprofil;
 PrintWriter output;
 boolean isGUIReady = false, startprgm = false;
 String fname;//string for file name(fahrprofil)
-GButton btnEnd, btnStart;
+GButton btnEnd, btnStart, btnEmergency;
 /**************************************************************************/
 
 void setup() {
@@ -68,27 +69,35 @@ void draw() { //<>//
     text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400,40);
     text("ESC Laufvar" + ESCLaufvariable, 400,60);
 
-    if ( ESCLaufvariable > (fahrprofil.getRowCount() - 1)) {
-      //btnEnd.setText("Store");
-      emergencyStop = true;
+    if ( ESCLaufvariable >= (fahrprofil.getRowCount() - 1)) {
+     if( OnetimeRun == false){
+      //myPort.write(0);
       myPort.stop();
+      lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+      titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       progress.setText("Messung beendet und abgespeichert");
       G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO);
       output.flush();
       output.close();
       btnEnd.dispose();
-      while(true){}
+      btnEmergency.dispose();
+      OnetimeRun = true;
+     }
       
     }
-    if ( ESCLaufvariable < (fahrprofil.getRowCount() - 1) && emergencyStop == true ) { 
-      myPort.write(0); 
-    } else {
+    if ( StopAndStore == true ) { 
+      myPort.write(0);
+      myPort.stop();
+    } 
+    else if( ESCLaufvariable < (fahrprofil.getRowCount() - 1) ) {
+      //G4P.showMessage(this, "Die Messung ist im Gang", "Messung läuft", G4P.INFO);
       myPort.write(ESCWerte[ESCLaufvariable]);
       //println("ESCVariable: " + ESCLaufvariable);
       //println("fahrprofil: " + (fahrprofil.getRowCount() - 1));
 
       if ( ESCLaufvariable < (fahrprofil.getRowCount() - 1) && ESCsendNextValue == true) {
         ESCLaufvariable++;
+        messwertCounter++;
         ESCsendNextValue = false;
         println();
       }
@@ -98,14 +107,13 @@ void draw() { //<>//
 
 void serialEvent(Serial myPort) {
   try {
-    if(emergencyStop == false) {
+    if(StopAndStore == false) {
     ziel = myPort.readBytes();
 
     servo[0] = ziel[0];
     servo[1] = ziel[1];
     servo[2] = ziel[2];
     servo[3] = ziel[3];
-    messwertCounter++; // counter für Messwerte
     zeit[0] = ziel[4];
     zeit[1] = ziel[5];
     zeit[2] = ziel[6];
@@ -166,11 +174,6 @@ void serialEvent(Serial myPort) {
  
  
  }
-//void keyPressed() {
-//// Send the keystroke out:
-//myPort.write(key);
-//whichKey = key;
-//}
 
 
 long umwandelnZeit(byte array[]) {
@@ -201,18 +204,6 @@ double umwandelnDouble(byte array[]) {
 }
 
 
-
-//void mousePressed(){
-//if(pressed==false){
-//pressed=true;
-//return;
-//}
-//else{
-//output.flush();
-//output.close();
-//exit();
-//}
-//}
 public int map(int x, int inMin, int inMax, int outMin, int outMax) { //map a range of values to another range of values
 
   if (x < inMin) {  // if not in range
@@ -226,7 +217,7 @@ public int map(int x, int inMin, int inMax, int outMin, int outMax) { //map a ra
 
 /******************************UI**********************************************/
 public void shutdown(GButton button) {
-  emergencyStop = true;
+  StopAndStore = true;
   button.dispose();
   output.flush();
   output.close();
@@ -236,9 +227,16 @@ public void shutdown(GButton button) {
 public void handleButtonEvents(GButton button, GEvent event) { 
   boolean isComPortSelected = false;
 
+  if(button == btnEmergency){
+  myPort.write(0);
+  output.flush();
+  output.close();
+  exit();
+  }
+
   // End-Programm Selection
   if (button == btnEnd) {
-    if (ESCLaufvariable <= (fahrprofil.getRowCount() - 1)) {
+    if (ESCLaufvariable < (fahrprofil.getRowCount() - 1)) {
       int reply = G4P.selectOption(this, "Sind Sie sicher, dass sie das Programm vorzeitig beenden wollen?", "Messung läuft", G4P.INFO, G4P.YES_NO);
       if (reply == G4P.YES) {
         lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
@@ -266,7 +264,6 @@ public void handleButtonEvents(GButton button, GEvent event) {
     String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
     output = createWriter(outputPath);
     output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
-
     titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(), titleInputFile.getHeight());
     lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(), lblInputFile.getHeight() + 50 );
     titleOutputFile.setText("Name und Pfad der Ausgabedatei: ", GAlign.LEFT, GAlign.MIDDLE);
@@ -288,9 +285,11 @@ public void handleButtonEvents(GButton button, GEvent event) {
     //WICHTIG!!! Je nach Test mit echtem Port oder dummy muss die jeweilige Zeile auskommentiert werden.
     //btnEnd = new GButton(this, testButton.getX() + titleOutputFile.getWidth() + 80, testButton.getY(), testButton.getWidth() / 2, testButton.getHeight());
     btnEnd = new GButton(this, SerialPortsButton[0].getX() + titleOutputFile.getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
-
+    btnEmergency = new GButton(this, btnEnd.getX(), btnEnd.getY() + 50 , btnEnd.getWidth() / 2, btnEnd.getHeight());
     btnEnd.setText("Stop & Store");
     btnEnd.setLocalColorScheme(G4P.YELLOW_SCHEME);
+    btnEmergency.setText("Notaus");
+    btnEmergency.setLocalColorScheme(G4P.RED_SCHEME);
     progress = new GLabel(this, lblOutputFile.getX(), lblOutputFile.getY() + lblOutputFile.getHeight() + 10, titleOutputFile.getWidth(), titleOutputFile.getHeight());
     progress.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
     progress.setText("Messung läuft...");
