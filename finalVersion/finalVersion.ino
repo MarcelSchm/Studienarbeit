@@ -246,7 +246,7 @@ zeitAccelerometer = millis() - zeitAccelerometer;
 #ifdef PROCESSING
   if (isValueReady[3] == false) {
     umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
-    umwandelnBytes((beschleunigungssensor->acc_y + 0.04) , beschleunigungY); //offset korrektur
+    umwandelnBytes(beschleunigungssensor->acc_y, beschleunigungY);
     umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
     isValueReady[3] = true;
   }
