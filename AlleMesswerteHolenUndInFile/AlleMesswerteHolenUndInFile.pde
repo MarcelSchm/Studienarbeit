@@ -18,7 +18,6 @@ byte[] beschleunigungZ = new byte[4];
 boolean pressed = false; //maus gedrückt
 Table table; //objekt zum Tabellarisch speichern
 int messungNr = 0; //laufende ID der Messwerte
-int messwertNr = 0; // messwert Nr. der Sensoren z.B. 1=Waage, 2=Stromsensor
 //  Table fahrprofil;
 int[] ESCWerte;
 int ESCLaufvariable = 0;
@@ -29,7 +28,7 @@ boolean isButtonPressed = false; // warte auf COM-Port auswahl
 boolean StopAndStore = false;
 //  String portName; // Com-Port name
 String fahrprofilPath;
-boolean OnetimeRun = false;
+boolean OnetimeRun = false, startLogging = false, stopLogging = false;
 
 /***********************UI-Globale Variablen*******************************/
 // Controls used for file dialog GUI 
@@ -63,9 +62,7 @@ void setup() {
 void draw() { //<>//  
   background(0);
   if ( isGUIReady == true) {
-    text("Last Received: " + inByte, 100, 130); 
-    text("Last Sent: " + whichKey, 100, 100);
-    text("Messwerte: " + messwertCounter, 400, 20); // Anzeige des Messwertes oben rechts
+    text("Messwert-Nr: " + messungNr, 400, 20); // Anzeige des Messwertes oben rechts
     text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400,40);
     text("ESC Laufvar" + ESCLaufvariable, 400,60);
 
@@ -89,7 +86,7 @@ void draw() { //<>//
       myPort.write(0);
       myPort.stop();
     } 
-    else if( ESCLaufvariable < (fahrprofil.getRowCount() - 1) ) {
+    else if( ESCLaufvariable < (fahrprofil.getRowCount() - 1)) {
       //G4P.showMessage(this, "Die Messung ist im Gang", "Messung läuft", G4P.INFO);
       myPort.write(ESCWerte[ESCLaufvariable]);
       //println("ESCVariable: " + ESCLaufvariable);
@@ -145,22 +142,9 @@ void serialEvent(Serial myPort) {
 
     ESCsendNextValue = true;
 
-    inByte = umwandelnDouble(servo);
-    inByte = map((int)inByte, 0, 179, 0, 100);
-    output.print(messungNr + ";" + String.format(Locale.US, "%.2f", inByte)); //hier neue Messwerte hinzufügen
-    inByte = umwandelnZeit(zeit);
-    output.print( ";" + String.format(Locale.US, "%.2f", inByte)); 
-    inByte = umwandelnDouble(gewicht);
-    output.print( ";" + String.format(Locale.US, "%.2f", inByte)); 
-    inByte = umwandelnDouble(strom);
-    output.print( ";" + String.format(Locale.US, "%.2f", inByte));
-    inByte = umwandelnDouble(beschleunigungX);
-    output.print( ";" + String.format(Locale.US, "%.2f", inByte));
-    inByte = umwandelnDouble(beschleunigungY);
-    output.print( ";" + String.format(Locale.US, "%.2f", inByte));
-    inByte = umwandelnDouble(beschleunigungZ);
-    output.println( ";" + String.format(Locale.US, "%.2f", inByte));
-    messungNr++;
+     if( startLogging == true && stopLogging == false){ // write only the profile data, no leading zeros or end zeros
+      writeToFile(umwandelnDouble(servo),umwandelnZeit(zeit),umwandelnDouble(gewicht), umwandelnDouble(strom),umwandelnDouble(beschleunigungX),umwandelnDouble(beschleunigungY),umwandelnDouble(beschleunigungZ));
+     }
    }
   }
   catch(RuntimeException e) {
@@ -169,10 +153,16 @@ void serialEvent(Serial myPort) {
   }
 } 
 
- void printToOutput(){
- 
- 
- 
+ void writeToFile(double servo, double zeit, double gewicht, double strom, double beschleunigungX, double beschleunigungY, double beschleunigungZ){ // for sequential sending of measured data. The head of the output file is written after pressing the "Messung starten" button 
+   servo = map((int)servo, 0, 179, 0, 100);
+   output.print(messungNr  + ";" + String.format(Locale.US, "%.2f", servo));
+   output.print( ";" + String.format(Locale.US, "%.2f", zeit)); 
+   output.print( ";" + String.format(Locale.US, "%.2f", gewicht));
+   output.print( ";" + String.format(Locale.US, "%.2f", strom));
+   output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungX));
+   output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungY));
+   output.println( ";" + String.format(Locale.US, "%.2f", beschleunigungZ));
+   messungNr++;
  }
 
 
@@ -242,6 +232,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
         lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         shutdown(btnEnd);
+        stopLogging = true;
       }
     } else {
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
@@ -251,6 +242,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
       output.flush();
       output.close();
       btnEnd.dispose();
+      //stopLogging = true;
     }
   }
   //start-button Selection
@@ -258,15 +250,18 @@ public void handleButtonEvents(GButton button, GEvent event) {
     startprgm = true;
     println("gedrückt");
     handleFileDialog(button);
-    //AUSGESCHNITTEN
+
     // open File 
     fahrprofil = loadTable(fname, "header");
     String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
     output = createWriter(outputPath);
     output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
-    for( int i = 0; i < 2; i++){
+    for( int i = 0; i < 80; i++){ //initialize a stable connection after 80 measure points
     myPort.write(0);
     }
+    startLogging = true; //reset all counter to begin with zero after a stable connection
+    ESCLaufvariable = 0;
+    
     titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(), titleInputFile.getHeight());
     lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(), lblInputFile.getHeight() + 50 );
     titleOutputFile.setText("Name und Pfad der Ausgabedatei: ", GAlign.LEFT, GAlign.MIDDLE);
