@@ -1,11 +1,9 @@
-import processing.serial.*; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+import processing.serial.*; // //<>//
 import java.util.Locale;
 import g4p_controls.*;
 
 
 // Serial myPort;      // The serial port
-int whichKey = -1;  // Variable to hold keystoke values
-double inByte = -1.0;    // Incoming serial data
 byte[] ziel = new byte[29];  //daten
 byte[] servo = new byte[4]; 
 byte[] zeit = new byte[5];
@@ -14,8 +12,6 @@ byte[] strom = new byte[4];
 byte[] beschleunigungX = new byte[4]; 
 byte[] beschleunigungY = new byte[4]; 
 byte[] beschleunigungZ = new byte[4]; 
-// PrintWriter output; // Data File
-boolean pressed = false; //maus gedrückt
 Table table; //objekt zum Tabellarisch speichern
 int messungNr = 0; //laufende ID der Messwerte
 //  Table fahrprofil;
@@ -23,7 +19,6 @@ int[] ESCWerte;
 int ESCLaufvariable = 0;
 int messwertCounter = 0;
 boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert(Serial Eveent überprüfung)
-boolean userAbbort = false;
 boolean isButtonPressed = false; // warte auf COM-Port auswahl
 boolean StopAndStore = false;
 //  String portName; // Com-Port name
