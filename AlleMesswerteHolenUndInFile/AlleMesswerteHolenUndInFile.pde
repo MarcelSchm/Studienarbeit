@@ -20,7 +20,7 @@ int ESCLaufvariable = 0;
 int messwertCounter = 0;
 boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert(Serial Eveent überprüfung)
 boolean isButtonPressed = false; // warte auf COM-Port auswahl
-boolean StopAndStore = false;
+boolean StopAndStore = false, emergencyShutdown = false;
 //  String portName; // Com-Port name
 String fahrprofilPath;
 boolean OnetimeRun = false, startLogging = false, stopLogging = false;
@@ -61,10 +61,10 @@ void draw() { //<>//
     text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400,40);
     text("ESC Laufvar" + ESCLaufvariable, 400,60);
 
-    if ( ESCLaufvariable >= (fahrprofil.getRowCount() - 1)) {
-     if( OnetimeRun == false){
-      //myPort.write(0);
-      myPort.stop();
+    if ( ESCLaufvariable >= (ESCWerte.length - 1) ) {
+     if( OnetimeRun == false ){
+      myPort.write(0);
+      //myPort.stop();
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       progress.setText("Messung beendet und abgespeichert");
@@ -72,22 +72,22 @@ void draw() { //<>//
       output.flush();
       output.close();
       btnEnd.dispose();
-      btnEmergency.dispose();
+      //btnEmergency.dispose();
       OnetimeRun = true;
      }
       
     }
-    if ( StopAndStore == true ) { 
+    if ( StopAndStore == true || emergencyShutdown == true) { 
       myPort.write(0);
-      myPort.stop();
+      //myPort.stop();
     } 
-    else if( ESCLaufvariable < (fahrprofil.getRowCount() - 1)) {
+    else if( ESCLaufvariable < (ESCWerte.length - 1)) {
       //G4P.showMessage(this, "Die Messung ist im Gang", "Messung läuft", G4P.INFO);
       myPort.write(ESCWerte[ESCLaufvariable]);
       //println("ESCVariable: " + ESCLaufvariable);
       //println("fahrprofil: " + (fahrprofil.getRowCount() - 1));
 
-      if ( ESCLaufvariable < (fahrprofil.getRowCount() - 1) && ESCsendNextValue == true) {
+      if ( ESCLaufvariable < (ESCWerte.length - 1) && ESCsendNextValue == true) {
         ESCLaufvariable++;
         messwertCounter++;
         ESCsendNextValue = false;
@@ -214,14 +214,16 @@ public void handleButtonEvents(GButton button, GEvent event) {
 
   if(button == btnEmergency){
   myPort.write(0);
+  emergencyShutdown = true;
   output.flush();
   output.close();
-  exit();
+ 
+  //exit();
   }
 
   // End-Programm Selection
   if (button == btnEnd) {
-    if (ESCLaufvariable < (fahrprofil.getRowCount() - 1)) {
+    if (ESCLaufvariable < (ESCWerte.length - 1)) {
       int reply = G4P.selectOption(this, "Sind Sie sicher, dass sie das Programm vorzeitig beenden wollen?", "Messung läuft", G4P.INFO, G4P.YES_NO);
       if (reply == G4P.YES) {
         lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
@@ -251,7 +253,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
     output = createWriter(outputPath);
     output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
-    for( int i = 0; i < 80; i++){ //initialize a stable connection after 80 measure points
+    for( int i = 0; i < 90 ; i++){ //initialize a stable connection after 80 measure points
     myPort.write(0);
     }
     startLogging = true; //reset all counter to begin with zero after a stable connection
@@ -265,12 +267,16 @@ public void handleButtonEvents(GButton button, GEvent event) {
     lblOutputFile.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
     lblOutputFile.setText(sketchPath("") + "\n\n" + outputPath);
     lblOutputFile.setOpaque(true);
-    ESCWerte = new int[fahrprofil.getRowCount()];
+    ESCWerte = new int[fahrprofil.getRowCount() + 70 ];
+    println(ESCWerte.length);
     println(fahrprofil.getRowCount() + " total rows in fahrprofil");
     for (TableRow row : fahrprofil.rows()) {
       //println(row.getString("ESC-Werte"));
       ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")), 0, 100, 0, 179); // mapping 0% to 100% to Servo values from 0 to 179
       ESCLaufvariable++;
+    }
+    for( int i = ESCLaufvariable; i <= 70; i++ ){
+    ESCWerte[i] = 0;
     }
     println(" VAriable: " + ESCLaufvariable);
     ESCLaufvariable = 0;
