@@ -65,6 +65,15 @@ void draw() { //<>//
     if ( ESCLaufvariable >= (ESCWerte.length - 1) ) {
      if( OnetimeRun == false ){
       myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
       //myPort.stop();
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
       titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
@@ -73,12 +82,16 @@ void draw() { //<>//
       output.flush();
       output.close();
       btnEnd.dispose();
+        myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
+      myPort.write(0);
       //btnEmergency.dispose();
       OnetimeRun = true;
      }
       
     }
-    if ( StopAndStore == true || emergencyShutdown == true) { 
+    if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable >= (ESCWerte.length - 1)) ){ 
       println("ESCLaufvariable in draw" + ESCLaufvariable);
       myPort.write(0);
       //myPort.stop();
@@ -262,9 +275,9 @@ public void handleButtonEvents(GButton button, GEvent event) {
     String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
     output = createWriter(outputPath);
     output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
-    for( int i = 0; i < 90 ; i++){ //initialize a stable connection after 80 measure points
-    myPort.write(0);
-    }
+    //for( int i = 0; i < 90 ; i++){ //initialize a stable connection after 80 measure points
+    //myPort.write(0);
+    //}
     startLogging = true; //reset all counter to begin with zero after a stable connection
     ESCLaufvariable = 0;
     
@@ -276,7 +289,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     lblOutputFile.setTextAlign(GAlign.LEFT, GAlign.MIDDLE);
     lblOutputFile.setText(sketchPath("") + "\n\n" + outputPath);
     lblOutputFile.setOpaque(true);
-    ESCWerte = new int[fahrprofil.getRowCount() + 70 ];
+    ESCWerte = new int[fahrprofil.getRowCount() + 5];
     println(ESCWerte.length);
     println(fahrprofil.getRowCount() + " total rows in fahrprofil");
     for (TableRow row : fahrprofil.rows()) {
@@ -284,7 +297,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
       ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")), 0, 100, 0, 179); // mapping 0% to 100% to Servo values from 0 to 179
       ESCLaufvariable++;
     }
-    for( int i = ESCLaufvariable; i <= 70; i++ ){
+    for( int i = ESCLaufvariable; i <= 5; i++ ){
     ESCWerte[i] = 0;
     }
     println(" VAriable: " + ESCLaufvariable);
