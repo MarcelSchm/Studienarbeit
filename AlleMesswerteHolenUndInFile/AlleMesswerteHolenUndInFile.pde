@@ -24,7 +24,7 @@ boolean StopAndStore = false, emergencyShutdown = false;
 //  String portName; // Com-Port name
 String fahrprofilPath;
 boolean OnetimeRun = false, startLogging = false, stopLogging = false;
-
+double lastMillis = 0.0;
 /***********************UI-Globale Variablen*******************************/
 // Controls used for file dialog GUI 
 GButton btnInput;
@@ -56,6 +56,7 @@ void setup() {
 
 void draw() { //<>//  
   background(0);
+  lastMillis = millis();
   if ( isGUIReady == true) {
     text("Messwert-Nr: " + messungNr, 400, 20); // Anzeige des Messwertes oben rechts
     text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400,40);
@@ -78,6 +79,7 @@ void draw() { //<>//
       
     }
     if ( StopAndStore == true || emergencyShutdown == true) { 
+      println("ESCLaufvariable in draw" + ESCLaufvariable);
       myPort.write(0);
       //myPort.stop();
     } 
@@ -101,6 +103,8 @@ void serialEvent(Serial myPort) {
   try {
     if(StopAndStore == false) {
     ziel = myPort.readBytes();
+    lastMillis = millis() - lastMillis;
+    println(" Zeitabstand : " + lastMillis);
 
     servo[0] = ziel[0];
     servo[1] = ziel[1];
@@ -206,18 +210,21 @@ public void shutdown(GButton button) {
   button.dispose();
   output.flush();
   output.close();
-  progress.setText("Messung beendet und abgespeichert");
+  
 }
 
 public void handleButtonEvents(GButton button, GEvent event) { 
   boolean isComPortSelected = false;
 
   if(button == btnEmergency){
+    //println("ESCLaufvariable in GUI" + ESCLaufvariable);
   myPort.write(0);
   emergencyShutdown = true;
   output.flush();
   output.close();
- 
+  lblOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
+  titleOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
+  progress.setText("Notaus, Datensatz möglicherweise nicht vollständig");
   //exit();
   }
 
@@ -226,10 +233,12 @@ public void handleButtonEvents(GButton button, GEvent event) {
     if (ESCLaufvariable < (ESCWerte.length - 1)) {
       int reply = G4P.selectOption(this, "Sind Sie sicher, dass sie das Programm vorzeitig beenden wollen?", "Messung läuft", G4P.INFO, G4P.YES_NO);
       if (reply == G4P.YES) {
-        lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-        titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+        lblOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
+        titleOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
+        progress.setText("Messung vorzeitig beendet");
         shutdown(btnEnd);
         stopLogging = true;
+        btnEmergency.setEnabled(false);
       }
     } else {
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
