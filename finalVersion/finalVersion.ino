@@ -130,6 +130,7 @@ void loop() {
   servoValue = Serial.read();
   umwandelnBytes(servoValue, servo);
   isValueReady[0] = true;
+  serialFlush();
      }
   //  }
 #endif
@@ -246,7 +247,7 @@ zeitAccelerometer = millis() - zeitAccelerometer;
 #ifdef PROCESSING
   if (isValueReady[3] == false) {
     umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
-    umwandelnBytes(beschleunigungssensor->acc_y, beschleunigungY);
+    umwandelnBytes(beschleunigungssensor->acc_y + 0.04, beschleunigungY);// offset to get exactly -1g
     umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
     isValueReady[3] = true;
   }
@@ -363,6 +364,11 @@ void umwandelnZeit(unsigned long zeit, byte array[]){
   array[4] = '@';
   }
 
+void serialFlush(){
+  while(Serial.available() > 0) {
+    char t = Serial.read();
+  }
+}   
   
 void umwandelnBytes(double zahl, byte array[]) {
   bool negativ = false;
