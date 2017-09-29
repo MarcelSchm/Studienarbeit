@@ -34,9 +34,9 @@ void BMA180:: accelerometerInit() {
   writeTo(PWR, 0x10);       // Wake up
 
   //----------------------------------------------------------------
-  // Set bandwidth to 10 Hz; no change to temperature sensivity
+  // Set bandwidth to 1200 Hz; no change to temperature sensivity
   readFrom(BW, 1, temp);
-  temp1 = temp[0] & 0x0F;   // Clear bandwidth bits xxxx....
+  temp1 = temp[0] & 0x7F;   // Clear bandwidth bits xxxx....
   writeTo(BW, temp1);
 
   //----------------------------------------------------------------

@@ -247,22 +247,25 @@ zeitAccelerometer = millis() - zeitAccelerometer;
 #ifdef PROCESSING
   if (isValueReady[3] == false) {
     umwandelnBytes(beschleunigungssensor->acc_x, beschleunigungX);
-    umwandelnBytes(beschleunigungssensor->acc_y + 0.04, beschleunigungY);// offset to get exactly -1g
+    umwandelnBytes((beschleunigungssensor->acc_y + 0.04) , beschleunigungY);// offset to get exactly -1g
     umwandelnBytes(beschleunigungssensor->acc_z, beschleunigungZ);
     isValueReady[3] = true;
   }
 #endif
 
 #ifdef DEBUGACCELEROMETER
+  Serial.print("Zeit zwischen Messwerten: ");
+  Serial.println(zeitAccelerometer);
   Serial.print("x = ");
-  Serial.print(beschleunigungssensor->acc_x);
+  Serial.print(beschleunigungssensor->acc_x,5);
   Serial.print("g");
 
   Serial.print("\t y = ");
-  Serial.print(beschleunigungssensor->acc_y);
+  Serial.print(beschleunigungssensor->acc_y + 0.04,5);
   Serial.print("g");
 
   Serial.print("\t z = ");
+  Serial.print(beschleunigungssensor->acc_z,5);
   Serial.println("g");
 #endif
 
