@@ -129,6 +129,7 @@ void loop() {
   if (Serial.available() > 0) {
   servoValue = Serial.read();
   umwandelnBytes(servoValue, servo);
+  servo[2] = 0; // damit keine nachkommazahlen vorhanden sind
   isValueReady[0] = true;
   serialFlush();
      }

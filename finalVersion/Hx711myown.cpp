@@ -45,7 +45,7 @@ void HX711::set_gain(byte gain) {
 long HX711::read() {
   // wait for the chip to become ready
   while (!is_ready()) {
-    // Will do nothing on Arduino but prevent resets of ESP8266 (Watchdog Issue)
+    // Will do nothing on Arduino but prevent possible resets
     yield();
   }
 
@@ -53,7 +53,7 @@ long HX711::read() {
   uint8_t data[3] = { 0 };
   uint8_t filler = 0x00;
 
-  // pulse the clock pin 24 times to read the data
+  // pulse the clock pin 24 times to read the data from DOUT Pin
   data[2] = shiftIn(DOUT, PD_SCK, MSBFIRST);
   data[1] = shiftIn(DOUT, PD_SCK, MSBFIRST);
   data[0] = shiftIn(DOUT, PD_SCK, MSBFIRST);
