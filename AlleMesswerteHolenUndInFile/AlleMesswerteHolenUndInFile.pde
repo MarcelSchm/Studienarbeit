@@ -167,9 +167,9 @@ void serialEvent(Serial myPort) {
 
  void writeToFile(double servo, double zeit, double gewicht, double strom, double beschleunigungX, double beschleunigungY, double beschleunigungZ){ // for sequential sending of measured data. The head of the output file is written after pressing the "Messung starten" button 
    servo = map((int)servo, 0, 179, 0, 100);
-   output.print(messungNr  + ";" + String.format(Locale.US, "%.2f", servo));
+   output.print(messungNr  + ";" + String.format(Locale.US, "%.0f", servo));
    output.print( ";" + String.format(Locale.US, "%.2f", zeit)); 
-   output.print( ";" + String.format(Locale.US, "%.2f", gewicht));
+   output.print( ";" + String.format(Locale.US, "%.0f", gewicht));
    output.print( ";" + String.format(Locale.US, "%.2f", strom));
    output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungX));
    output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungY));
@@ -198,8 +198,8 @@ double umwandelnDouble(byte array[]) {
     //println(binary( ((array[0]&0x0F)<< 8) | (array[1]&0xFF)));
     int nachkomma = (array[2]) ;
 
-    if ( 2 == (array[0]&0xF0)>>4) {
-      return -1.0*((double)vorkomma + (double)nachkomma / 100.0);
+    if ( 2 == (array[0] & 0xF0) >> 4) {
+      return -1.0 * ((double)vorkomma + (double)nachkomma / 100.0);
     }
     return (double)vorkomma + (double)nachkomma / 100.0;
   } else return -1;// magic error number, if something doesnt work
