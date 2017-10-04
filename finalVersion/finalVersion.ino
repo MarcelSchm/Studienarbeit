@@ -8,11 +8,11 @@
 #define AMPPIN  A2 //Strom-Pin
 // Beschleunigungssensor-Pins A4(SDA) & A5 (SCL) da I2C Schnittstelle
 
-#define PROCESSING  //für weitergabe an processing
+//#define PROCESSING  //für weitergabe an processing
 //#define DEBUGSCALE  //Waagen-Messwerte über Arduino Serial Monitor
 //#define CALIBRATIONSCALE  // zum kalibrieren der Waage. hiermit kann der calibration factor eingestellt werden mit + und -
 //#define DEBUGSERVO // Manuell Werte für den ESC vorgeben
-//#define DEBUGCURRENT //Strom-Messwerte über Arduino Serial Monitor
+#define DEBUGCURRENT //Strom-Messwerte über Arduino Serial Monitor
 //#define DEBUGACCELEROMETER // Beschleunigungs-MEsswerte über Arduino Serial Monitor
 //#define SERIALOUTPUTALL //gib alle Messwerte über arduino serial monitor aus
 HX711 scale(DOUT, CLK);
@@ -205,6 +205,7 @@ void loop() {
   /****************************WAAGE-ENDE******************************************************************/
 
   /*******************************STROMSENSOR**********************************************************************/
+  zeitCurrent = millis();
   total = total - CurrentReadings[index];
   CurrentReadings[index] = analogRead(AMPPIN); //Raw data reading
   //Data processing:512->raw data from analogRead when the input is 0;
@@ -228,7 +229,10 @@ void loop() {
 
 #ifdef DEBUGCURRENT
   Serial.print("StromWert: ");
-  Serial.println(currentValue);
+  Serial.print(currentValue);
+  Serial.print("  Zeit: ");
+  Serial.println(zeitCurrent);
+  
   delay(10);
 #endif
 
