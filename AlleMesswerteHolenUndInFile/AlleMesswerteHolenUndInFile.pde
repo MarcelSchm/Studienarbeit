@@ -59,44 +59,42 @@ void draw() { //<>//
   lastMillis = millis();
   if ( isGUIReady == true) {
     text("Messwert-Nr: " + messungNr, 400, 20); // Anzeige des Messwertes oben rechts
-    text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400,40);
-    text("ESC Laufvar" + ESCLaufvariable, 400,60);
+    text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400, 40);
+    text("ESC Laufvar" + ESCLaufvariable, 400, 60);
 
     if ( ESCLaufvariable >= (ESCWerte.length - 1) ) {
-     if( OnetimeRun == false ){
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      //myPort.stop();
-      lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-      titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-      progress.setText("Messung beendet und abgespeichert");
-      G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO);
-      output.flush();
-      output.close();
-      btnEnd.dispose();
+      if ( OnetimeRun == false ) {
         myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      myPort.write(0);
-      //btnEmergency.dispose();
-      OnetimeRun = true;
-     }
-      
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        //myPort.stop();
+        lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+        titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+        progress.setText("Messung beendet und abgespeichert");
+        G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO);
+        output.flush();
+        output.close();
+        btnEnd.dispose();
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        myPort.write(0);
+        //btnEmergency.dispose();
+        OnetimeRun = true;
+      }
     }
-    if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable >= (ESCWerte.length - 1)) ){ 
+    if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable >= (ESCWerte.length - 1)) ) { 
       println("ESCLaufvariable in draw" + ESCLaufvariable);
       myPort.write(0);
       //myPort.stop();
-    } 
-    else if( ESCLaufvariable < (ESCWerte.length - 1)) {
+    } else if ( ESCLaufvariable < (ESCWerte.length - 1)) {
       //G4P.showMessage(this, "Die Messung ist im Gang", "Messung läuft", G4P.INFO);
       myPort.write(ESCWerte[ESCLaufvariable]);
       //println("ESCVariable: " + ESCLaufvariable);
@@ -114,50 +112,50 @@ void draw() { //<>//
 
 void serialEvent(Serial myPort) {
   try {
-    if(StopAndStore == false) {
-    ziel = myPort.readBytes();
-    lastMillis = millis() - lastMillis;
-    println(" Zeitabstand : " + lastMillis);
+    if (StopAndStore == false) {
+      ziel = myPort.readBytes();
+      lastMillis = millis() - lastMillis;
+      println(" Zeitabstand : " + lastMillis);
 
-    servo[0] = ziel[0];
-    servo[1] = ziel[1];
-    servo[2] = ziel[2];
-    servo[3] = ziel[3];
-    zeit[0] = ziel[4];
-    zeit[1] = ziel[5];
-    zeit[2] = ziel[6];
-    zeit[3] = ziel[7];
-    zeit[4] = ziel[8];
-    gewicht[0] = ziel[9];
-    gewicht[1] = ziel[10];
-    gewicht[2] = ziel[11];
-    gewicht[3] = ziel[12];
-    strom[0] = ziel[13];
-    strom[1] = ziel[14];
-    strom[2] = ziel[15];
-    strom[3] = ziel[16];
-    beschleunigungX[0] = ziel[17];
-    beschleunigungX[1] = ziel[18];
-    beschleunigungX[2] = ziel[19];
-    beschleunigungX[3] = ziel[20];
-    beschleunigungY[0] = ziel[21];
-    beschleunigungY[1] = ziel[22];
-    beschleunigungY[2] = ziel[23];
-    beschleunigungY[3] = ziel[24];
-    beschleunigungZ[0] = ziel[25];
-    beschleunigungZ[1] = ziel[26];
-    beschleunigungZ[2] = ziel[27];
-    if (ziel[28] == 'e') { //last byte sended is 'e', changed so that 'umwandelnDouble' will work
-      ziel[28] = '@';
+      servo[0] = ziel[0];
+      servo[1] = ziel[1];
+      servo[2] = ziel[2];
+      servo[3] = ziel[3];
+      zeit[0] = ziel[4];
+      zeit[1] = ziel[5];
+      zeit[2] = ziel[6];
+      zeit[3] = ziel[7];
+      zeit[4] = ziel[8];
+      gewicht[0] = ziel[9];
+      gewicht[1] = ziel[10];
+      gewicht[2] = ziel[11];
+      gewicht[3] = ziel[12];
+      strom[0] = ziel[13];
+      strom[1] = ziel[14];
+      strom[2] = ziel[15];
+      strom[3] = ziel[16];
+      beschleunigungX[0] = ziel[17];
+      beschleunigungX[1] = ziel[18];
+      beschleunigungX[2] = ziel[19];
+      beschleunigungX[3] = ziel[20];
+      beschleunigungY[0] = ziel[21];
+      beschleunigungY[1] = ziel[22];
+      beschleunigungY[2] = ziel[23];
+      beschleunigungY[3] = ziel[24];
+      beschleunigungZ[0] = ziel[25];
+      beschleunigungZ[1] = ziel[26];
+      beschleunigungZ[2] = ziel[27];
+      if (ziel[28] == 'e') { //last byte sended is 'e', changed so that 'umwandelnDouble' will work
+        ziel[28] = '@';
+      }
+      beschleunigungZ[3] = ziel[28];
+
+      ESCsendNextValue = true;
+
+      if ( startLogging == true && stopLogging == false) { // write only the profile data, no leading zeros or end zeros
+        writeToFile(umwandelnDouble(servo), umwandelnZeit(zeit), umwandelnDouble(gewicht), umwandelnDouble(strom), umwandelnDouble(beschleunigungX), umwandelnDouble(beschleunigungY), umwandelnDouble(beschleunigungZ));
+      }
     }
-    beschleunigungZ[3] = ziel[28];
-
-    ESCsendNextValue = true;
-
-     if( startLogging == true && stopLogging == false){ // write only the profile data, no leading zeros or end zeros
-      writeToFile(umwandelnDouble(servo),umwandelnZeit(zeit),umwandelnDouble(gewicht), umwandelnDouble(strom),umwandelnDouble(beschleunigungX),umwandelnDouble(beschleunigungY),umwandelnDouble(beschleunigungZ));
-     }
-   }
   }
   catch(RuntimeException e) {
     e.printStackTrace();
@@ -165,17 +163,17 @@ void serialEvent(Serial myPort) {
   }
 } 
 
- void writeToFile(double servo, double zeit, double gewicht, double strom, double beschleunigungX, double beschleunigungY, double beschleunigungZ){ // for sequential sending of measured data. The head of the output file is written after pressing the "Messung starten" button 
-   servo = map((int)servo, 0, 179, 0, 100);
-   output.print(messungNr  + ";" + String.format(Locale.US, "%.0f", servo));
-   output.print( ";" + String.format(Locale.US, "%.2f", zeit)); 
-   output.print( ";" + String.format(Locale.US, "%.0f", gewicht));
-   output.print( ";" + String.format(Locale.US, "%.2f", strom));
-   output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungX));
-   output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungY));
-   output.println( ";" + String.format(Locale.US, "%.2f", beschleunigungZ));
-   messungNr++;
- }
+void writeToFile(double servo, double zeit, double gewicht, double strom, double beschleunigungX, double beschleunigungY, double beschleunigungZ) { // for sequential sending of measured data. The head of the output file is written after pressing the "Messung starten" button 
+  servo = map((int)servo, 0, 179, 0, 100);
+  output.print(messungNr  + ";" + String.format(Locale.US, "%.0f", servo));
+  output.print( ";" + String.format(Locale.US, "%.2f", zeit)); 
+  output.print( ";" + String.format(Locale.US, "%.0f", gewicht));
+  output.print( ";" + String.format(Locale.US, "%.2f", strom));
+  output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungX));
+  output.print( ";" + String.format(Locale.US, "%.2f", beschleunigungY));
+  output.println( ";" + String.format(Locale.US, "%.2f", beschleunigungZ));
+  messungNr++;
+}
 
 
 long umwandelnZeit(byte array[]) {
@@ -223,22 +221,21 @@ public void shutdown(GButton button) {
   button.dispose();
   output.flush();
   output.close();
-  
 }
 
 public void handleButtonEvents(GButton button, GEvent event) { 
   boolean isComPortSelected = false;
 
-  if(button == btnEmergency){
+  if (button == btnEmergency) {
     //println("ESCLaufvariable in GUI" + ESCLaufvariable);
-  myPort.write(0);
-  emergencyShutdown = true;
-  output.flush();
-  output.close();
-  lblOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
-  titleOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
-  progress.setText("Notaus, Datensatz möglicherweise nicht vollständig");
-  //exit();
+    myPort.write(0);
+    emergencyShutdown = true;
+    output.flush();
+    output.close();
+    lblOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
+    titleOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
+    progress.setText("Notaus, Datensatz möglicherweise nicht vollständig");
+    //exit();
   }
 
   // End-Programm Selection
@@ -280,7 +277,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     //}
     startLogging = true; //reset all counter to begin with zero after a stable connection
     ESCLaufvariable = 0;
-    
+
     titleOutputFile = new GLabel(this, titleInputFile.getX(), lblInputFile.getY() + lblInputFile.getHeight() + 10, titleInputFile.getWidth(), titleInputFile.getHeight());
     lblOutputFile = new GLabel(this, lblInputFile.getX(), titleOutputFile.getY() + titleOutputFile.getHeight() + 10, lblInputFile.getWidth(), lblInputFile.getHeight() + 50 );
     titleOutputFile.setText("Name und Pfad der Ausgabedatei: ", GAlign.LEFT, GAlign.MIDDLE);
@@ -297,8 +294,8 @@ public void handleButtonEvents(GButton button, GEvent event) {
       ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")), 0, 100, 0, 179); // mapping 0% to 100% to Servo values from 0 to 179
       ESCLaufvariable++;
     }
-    for( int i = ESCLaufvariable; i <= 5; i++ ){
-    ESCWerte[i] = 0;
+    for ( int i = ESCLaufvariable; i <= 5; i++ ) {
+      ESCWerte[i] = 0;
     }
     println(" VAriable: " + ESCLaufvariable);
     ESCLaufvariable = 0;
@@ -306,7 +303,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     //WICHTIG!!! Je nach Test mit echtem Port oder dummy muss die jeweilige Zeile auskommentiert werden.
     //btnEnd = new GButton(this, testButton.getX() + titleOutputFile.getWidth() + 80, testButton.getY(), testButton.getWidth() / 2, testButton.getHeight());
     btnEnd = new GButton(this, SerialPortsButton[0].getX() + titleOutputFile.getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
-    btnEmergency = new GButton(this, btnEnd.getX(), btnEnd.getY() + 50 , btnEnd.getWidth() / 2, btnEnd.getHeight());
+    btnEmergency = new GButton(this, btnEnd.getX(), btnEnd.getY() + 50, btnEnd.getWidth() / 2, btnEnd.getHeight());
     btnEnd.setText("Stop & Store");
     btnEnd.setLocalColorScheme(G4P.YELLOW_SCHEME);
     btnEmergency.setText("Notaus");
