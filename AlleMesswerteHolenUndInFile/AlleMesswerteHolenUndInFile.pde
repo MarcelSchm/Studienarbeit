@@ -62,11 +62,11 @@ void draw() {
     //text("ESC Laufvar" + ESCLaufvariable, 400, 60);
 
     if ( ESCLaufvariable >= (ESCWerte.length - 1) ) {
-      if ( OnetimeRun == false ) {
-        myPort.write(0);
-        lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+      lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         progress.setText("Messung beendet und abgespeichert");
+      if ( OnetimeRun == false ) {
+        myPort.write(0);
         G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO);
         output.flush();
         output.close();
@@ -202,6 +202,7 @@ public void shutdown(GButton button) {
   button.dispose();
   output.flush();
   output.close();
+  myPort.write(0);
 }
 
 public void handleButtonEvents(GButton button, GEvent event) { 
@@ -222,6 +223,8 @@ public void handleButtonEvents(GButton button, GEvent event) {
   // End-Programm Selection
   if (button == btnEnd) {
     if (ESCLaufvariable < (ESCWerte.length - 1)) {
+      StopAndStore = true;
+      myPort.write(0);
       int reply = G4P.selectOption(this, "Sind Sie sicher, dass sie das Programm vorzeitig beenden wollen?", "Messung läuft", G4P.INFO, G4P.YES_NO);
       if (reply == G4P.YES) {
         lblOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
@@ -251,7 +254,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
 
     // open File 
     fahrprofil = loadTable(fname, "header");
-    String outputPath = year() + "_" + month() + "_" + day() + "___" + hour() + "-" + minute()+ "-"+ second()+ ".csv";
+    String outputPath = year() + "_" + String.format("%02d", month()) + "_" + String.format( "%02d", day()) + "___" + String.format( "%02d", hour()) + "-" + String.format( "%02d", minute()) + "-"+ String.format( "%02d", second()) + ".csv";
     output = createWriter(outputPath);
     output.println("Messwert-Nr." + ";" + "ESC-Werte" + ";" + "Laufzeit seit Systemstart des MikroControllers in microsekunden" + ";" + "Gewicht in g" + ";" + "Strom in A" + ";" + "Beschleunigung X-Richtung in g" + ";" + "Beschleunigung Y-Richtung in g" + ";" + "Beschleunigung Z-Richtung in g" );  //hier spalten ergänzen
     //for( int i = 0; i < 90 ; i++){ //initialize a stable connection after 80 measure points
