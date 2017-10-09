@@ -1,9 +1,7 @@
 import processing.serial.*; // //<>//
 import java.util.Locale;
 import g4p_controls.*;
-
-
-// Serial myPort;      // The serial port
+/******************Globale Variablen Deklaration**************************/
 byte[] ziel = new byte[29];  //daten
 byte[] servo = new byte[4]; 
 byte[] zeit = new byte[5];
@@ -12,10 +10,9 @@ byte[] strom = new byte[4];
 byte[] beschleunigungX = new byte[4]; 
 byte[] beschleunigungY = new byte[4]; 
 byte[] beschleunigungZ = new byte[4]; 
-Table table; //objekt zum Tabellarisch speichern
+Table table; //objekt zum Tabellarisch speichern der Messdaten
 int messungNr = 0; //laufende ID der Messwerte
-//  Table fahrprofil;
-int[] ESCWerte;
+int[] ESCWerte; //array für die Werte des Fahrprofils
 int ESCLaufvariable = 0;
 int messwertCounter = 0;
 boolean ESCsendNextValue = true; //ob ESC wert gesendet wurde, true für ersten wert(Serial Eveent überprüfung)
@@ -25,6 +22,8 @@ boolean StopAndStore = false, emergencyShutdown = false;
 String fahrprofilPath;
 boolean OnetimeRun = false, startLogging = false, stopLogging = false;
 double lastMillis = 0.0;
+/**************************************************************************/
+
 /***********************UI-Globale Variablen*******************************/
 // Controls used for file dialog GUI 
 GButton btnInput;
@@ -54,7 +53,7 @@ void setup() {
   createCOMPortGUI(10, 30, 200, 20);
 }
 
-void draw() { //<>//  
+void draw() { 
   background(0);
   lastMillis = millis();
   if ( isGUIReady == true) {
@@ -72,6 +71,7 @@ void draw() { //<>//
         output.flush();
         output.close();
         btnEnd.dispose();
+        btnEmergency.dispose();
         myPort.write(0);
         OnetimeRun = true;
       }
@@ -81,11 +81,7 @@ void draw() { //<>//
       myPort.write(0);
       //myPort.stop();
     } else if ( ESCLaufvariable < (ESCWerte.length - 1)) {
-      //G4P.showMessage(this, "Die Messung ist im Gang", "Messung läuft", G4P.INFO);
       myPort.write(ESCWerte[ESCLaufvariable]);
-      //println("ESCVariable: " + ESCLaufvariable);
-      //println("fahrprofil: " + (fahrprofil.getRowCount() - 1));
-
       if ( ESCLaufvariable < (ESCWerte.length - 1) && ESCsendNextValue == true) {
         ESCLaufvariable++;
         messwertCounter++;
@@ -97,12 +93,11 @@ void draw() { //<>//
 }
 
 void serialEvent(Serial myPort) {
-  try {
+  try { // try-catch-block für evtl Übertragungsfehler
     if (StopAndStore == false) {
       ziel = myPort.readBytes();
       lastMillis = millis() - lastMillis;
       println(" Zeitabstand : " + lastMillis);
-
       servo[0] = ziel[0];
       servo[1] = ziel[1];
       servo[2] = ziel[2];
@@ -138,7 +133,7 @@ void serialEvent(Serial myPort) {
 
       ESCsendNextValue = true;
 
-      if ( startLogging == true && stopLogging == false) { // write only the profile data, no leading zeros or end zeros
+      if ( startLogging == true && stopLogging == false) { 
         writeToFile(umwandelnDouble(servo), umwandelnZeit(zeit), umwandelnDouble(gewicht), umwandelnDouble(strom), umwandelnDouble(beschleunigungX), umwandelnDouble(beschleunigungY), umwandelnDouble(beschleunigungZ));
       }
     }
@@ -244,6 +239,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
       output.flush();
       output.close();
       btnEnd.dispose();
+      btnEmergency.dispose();
       //stopLogging = true;
     }
   }
