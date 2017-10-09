@@ -58,23 +58,13 @@ void draw() { //<>//
   background(0);
   lastMillis = millis();
   if ( isGUIReady == true) {
-    text("Messwert-Nr: " + messungNr, 400, 20); // Anzeige des Messwertes oben rechts
-    text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400, 40);
-    text("ESC Laufvar" + ESCLaufvariable, 400, 60);
+    //text("Messwert-Nr: " + messungNr, 400, 20); // Anzeige des Messwertes oben rechts
+    //text("Anzahl Messdaten" + (fahrprofil.getRowCount() - 1), 400, 40);
+    //text("ESC Laufvar" + ESCLaufvariable, 400, 60);
 
     if ( ESCLaufvariable >= (ESCWerte.length - 1) ) {
       if ( OnetimeRun == false ) {
         myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        //myPort.stop();
         lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
         progress.setText("Messung beendet und abgespeichert");
@@ -83,10 +73,6 @@ void draw() { //<>//
         output.close();
         btnEnd.dispose();
         myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        myPort.write(0);
-        //btnEmergency.dispose();
         OnetimeRun = true;
       }
     }
@@ -227,7 +213,6 @@ public void handleButtonEvents(GButton button, GEvent event) {
   boolean isComPortSelected = false;
 
   if (button == btnEmergency) {
-    //println("ESCLaufvariable in GUI" + ESCLaufvariable);
     myPort.write(0);
     emergencyShutdown = true;
     output.flush();
@@ -235,6 +220,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     lblOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
     titleOutputFile.setLocalColorScheme(G4P.RED_SCHEME);
     progress.setText("Notaus, Datensatz möglicherweise nicht vollständig");
+    btnEnd.dispose();
     //exit();
   }
 
