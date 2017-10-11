@@ -34,7 +34,7 @@ Serial myPort;      // The serial port
 GLabel comPortTitle;
 GLabel infoCOMPort;
 GButton[] SerialPortsButton;
-GButton testButton;
+
 
 //other
 String portName;
@@ -285,8 +285,6 @@ public void handleButtonEvents(GButton button, GEvent event) {
     println(" VAriable: " + ESCLaufvariable);
     ESCLaufvariable = 0;
     isGUIReady = true;
-    //WICHTIG!!! Je nach Test mit echtem Port oder dummy muss die jeweilige Zeile auskommentiert werden.
-    //btnEnd = new GButton(this, testButton.getX() + titleOutputFile.getWidth() + 80, testButton.getY(), testButton.getWidth() / 2, testButton.getHeight());
     btnEnd = new GButton(this, SerialPortsButton[0].getX() + titleOutputFile.getWidth() + 80, SerialPortsButton[0].getY(), SerialPortsButton[0].getWidth() / 2, SerialPortsButton[0].getHeight());
     btnEmergency = new GButton(this, btnEnd.getX(), btnEnd.getY() + 50, btnEnd.getWidth() / 2, btnEnd.getHeight());
     btnEnd.setText("Stop & Store");
@@ -302,14 +300,6 @@ public void handleButtonEvents(GButton button, GEvent event) {
   }
 
   //COM-Port selection
-  if (button == testButton) {
-    comPortTitle.setText("gewählter COM-port: " + "NA");
-    portName = testButton.getText();
-    comPortTitle.setTextBold();
-    comPortTitle.setLocalColorScheme(G4P.GREEN_SCHEME);
-    isComPortSelected = true;
-    infoCOMPort.dispose();
-  }  
   for (GButton buttonCounter : SerialPortsButton) {
     if (buttonCounter == button) {
       comPortTitle.setText("gewählter COM-port: " + buttonCounter.getText());
@@ -325,9 +315,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     for (GButton buttonCounter : SerialPortsButton) {
       buttonCounter.dispose();
     }
-    if (testButton != null) {
-      testButton.dispose();
-    }
+    
 
     createFileSystemGUI(10, 60, 300);
   }
@@ -399,8 +387,6 @@ public void createCOMPortGUI(int x, int  y, int w, int h) {
     infoCOMPort.setText("keine COM-Ports zur Auswahl vorhanden. Bitte Anschluss überprüfen und Programm neu starten");
     infoCOMPort.setOpaque(true);
     infoCOMPort.setLocalColorScheme(G4P.RED_SCHEME);
-    testButton = new GButton(this, x, y + 100, w, h);
-    testButton.setText("testen ohne COM-Port");
   }
   SerialPortsButton = new GButton[Serial.list().length]; // make buttons for every Com-port
   for ( int i = 0; i < SerialPortsButton.length; i++) {
