@@ -170,7 +170,7 @@ void loop() {
 #endif
 
 #ifdef PROCESSING
-  if (isValueReady[3] == false) {
+  if (isValueReady[1] == false) {
     scale.set_scale(calibration_factor); //einstellen über diesen Kalibrierungsfaktor. lineare Interpolation zwischen Nullmessung und dem Vergleichsgewicht
  
     umwandelnBytes(scale.get_units(), gewicht);
@@ -221,7 +221,7 @@ void loop() {
    zeitCurrent = millis() - zeitCurrent;
 
 #ifdef PROCESSING
-  if (isValueReady[3] == false) {
+  if (isValueReady[2] == false) {
     umwandelnBytes(currentValue, strom); // hier wieder tauschen: currentValue
     isValueReady[2] = true;
   }

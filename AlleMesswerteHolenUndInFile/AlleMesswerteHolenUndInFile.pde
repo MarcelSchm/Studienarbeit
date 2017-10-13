@@ -1,4 +1,3 @@
-import processing.serial.*; // //<>//
 import java.util.Locale;
 import g4p_controls.*;
 /******************Globale Variablen Deklaration**************************/
@@ -43,7 +42,7 @@ PrintWriter output;
 boolean isGUIReady = false, startprgm = false;
 String fname;//string for file name(fahrprofil)
 GButton btnEnd, btnStart, btnEmergency;
-int counterForProgressLabel =0;
+int counterForProgressLabel =0, counterForStopAndStore = 0; // necesssary because statements are executed after one iteration of GUI
 /**************************************************************************/
 
 void setup() {
@@ -85,7 +84,6 @@ void draw() {
       }
     }
     if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable >= (ESCWerte.length - 1)) ) { 
-      println("ESCLaufvariable in draw" + ESCLaufvariable);
       myPort.write(0);
       //myPort.stop();
     } else if ( ESCLaufvariable < (ESCWerte.length - 1)) {
@@ -211,6 +209,10 @@ public void shutdown(GButton button) {
   output.flush();
   output.close();
   myPort.write(0);
+}
+
+public void stopAndStore(){
+
 }
 
 public void handleButtonEvents(GButton button, GEvent event) { 
