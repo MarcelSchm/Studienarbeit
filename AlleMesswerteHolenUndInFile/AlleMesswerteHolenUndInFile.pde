@@ -1,7 +1,7 @@
 import processing.serial.*; //  //<>//
 import java.util.Locale;
 import g4p_controls.*;
-/******************Globale Variablen Deklaration**************************/
+/******************Global Values Declaration******************************/
 byte[] ziel = new byte[29];  //daten
 byte[] servo = new byte[4]; 
 byte[] zeit = new byte[5];
