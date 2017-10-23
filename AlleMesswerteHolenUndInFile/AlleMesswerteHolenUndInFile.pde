@@ -60,11 +60,11 @@ void draw() {
   if ( isGUIReady == true) {
     if ( ESCLaufvariable >= (ESCWerte.length - 1) ) {
       lblOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-        titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
-        progress.setText("Messung beendet und abgespeichert");
+      titleOutputFile.setLocalColorScheme(G4P.GREEN_SCHEME);
+      progress.setText("Messung beendet und abgespeichert");
       if ( OnetimeRun == false ) {
         myPort.write(0);
-        
+
         output.flush();
         output.close();
         btnEnd.dispose();
@@ -74,22 +74,21 @@ void draw() {
       }
       if ( 0 == progress.getText().compareTo("Messung beendet und abgespeichert") ) { // necessary, Infomessage pops up before progress bar draw
         counterForProgressLabel++;
-        if(counterForProgressLabel == 2){ // need 2 loops to update before showing Infomessage
-          G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO); 
-        }     
+        if (counterForProgressLabel == 2) { // need 2 loops to update before showing Infomessage
+          G4P.showMessage(this, "Die Messung wurde erfolgreich beendet", "Messung beendet", G4P.INFO);
+        }
       }
     }
     if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable > (ESCWerte.length - 1)) ) { 
       myPort.write(0);
       counterForStopAndStore++;
-              lblOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
-        titleOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
-        progress.setText("Messung vorzeitig beendet");
-      if ( counterForStopAndStore == 2){ // need 2 loops to update before showing Infomessage
+      lblOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
+      titleOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
+      progress.setText("Messung vorzeitig beendet");
+      if ( counterForStopAndStore == 2) { // need 2 loops to update before showing Infomessage
 
         stopAndStore();
       }
-      
     } else if ( ESCLaufvariable < (ESCWerte.length - 1)) {
       myPort.write(ESCWerte[ESCLaufvariable]);
       if ( ESCLaufvariable < (ESCWerte.length - 1) && ESCsendNextValue == true) {
@@ -213,7 +212,7 @@ public void shutdown(GButton button) {
   myPort.write(0);
 }
 
-public void stopAndStore(){
+public void stopAndStore() {
   myPort.write(0);
   G4P.showMessage(this, "Die Messung wurde vorzeitig beendet", "Messung vorzeitig beendet", G4P.INFO);
   shutdown(btnEnd);
@@ -263,7 +262,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     lblOutputFile.setText(sketchPath("") + "\n\n" + outputPath);
     lblOutputFile.setOpaque(true);
     ESCWerte = new int[fahrprofil.getRowCount() + 5]; // to be sure that last send values are zeros
-       for (TableRow row : fahrprofil.rows()) {
+    for (TableRow row : fahrprofil.rows()) {
       ESCWerte[ESCLaufvariable] = map(Integer.parseInt(row.getString("ESC-Werte")), 0, 100, 0, 179); // mapping 0% to 100% to Servo values from 0 to 179
       ESCLaufvariable++;
     }
@@ -302,7 +301,7 @@ public void handleButtonEvents(GButton button, GEvent event) {
     for (GButton buttonCounter : SerialPortsButton) {
       buttonCounter.dispose();
     }
-    
+
 
     createFileSystemGUI(10, 60, 300);
   }
