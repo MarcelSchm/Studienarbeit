@@ -79,8 +79,11 @@ void draw() {
         }
       }
     }
-    if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable > (ESCWerte.length - 1)) ) { 
+    if ( StopAndStore == true || emergencyShutdown == true || ( ESCLaufvariable > (ESCWerte.length - 1)) ) {
       myPort.write(0);
+      myPort.write(0);
+      myPort.write(0); // three times to be sure that next values in buffer are zeros
+      delay(20); //wait for motor to stop
       counterForStopAndStore++;
       lblOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
       titleOutputFile.setLocalColorScheme(G4P.YELLOW_SCHEME);
